@@ -127,17 +127,6 @@
 .outfit-card.fade-in-up:nth-child(7) { animation-delay: 0.35s; }
 .outfit-card.fade-in-up:nth-child(8) { animation-delay: 0.4s; }
 
-/* === Toast Slide Animation === */
-.toast {
-  transform: translateX(-50%) translateY(100px);
-  opacity: 0;
-}
-
-.toast.show {
-  transform: translateX(-50%) translateY(0);
-  opacity: 1;
-}
-
 /* === Copy Success Flash === */
 .copy-flash {
   animation: copy-flash 0.3s ease;
