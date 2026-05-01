@@ -4,8 +4,8 @@
  */
 const SITE_CONFIG = {
   github: {
-    user: 'bsqb0t',
-    repo: 'infinity-nikki-codes',
+    user: 'YOUR_USERNAME',
+    repo: 'YOUR_REPO',
     branch: 'main'
   },
   site: {
@@ -15,7 +15,16 @@ const SITE_CONFIG = {
   }
 };
 
+/**
+ * 生成图片 URL
+ * - 完整 URL（http/https 开头）直接返回（如 GitHub Issue 附件）
+ * - 文件名则拼接 raw.githubusercontent.com 路径
+ */
 function getImageUrl(filename) {
+  if (!filename) return '';
+  if (filename.startsWith('http://') || filename.startsWith('https://')) {
+    return filename;
+  }
   const { user, repo, branch } = SITE_CONFIG.github;
   return `https://raw.githubusercontent.com/${user}/${repo}/${branch}/images/${filename}`;
 }
