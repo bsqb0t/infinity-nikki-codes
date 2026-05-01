@@ -169,6 +169,13 @@
       const name = document.getElementById('name').value.trim();
       if (!code || !name) { showToast('请至少填写搭配码和名称'); return; }
 
+      // 生成 ID，确保有效
+      const codeSlug = code.replace(/[^a-zA-Z0-9]/g, '').slice(-6).toLowerCase();
+      if (!codeSlug) {
+        showToast('搭配码中需要包含字母或数字，不能全是符号');
+        return;
+      }
+
       const nameEn = document.getElementById('nameEn').value.trim();
       const description = document.getElementById('description').value.trim();
       const category = document.getElementById('category').value;
@@ -176,7 +183,7 @@
       const imageName = document.getElementById('imageName').value.trim();
       const tags = Array.from(document.querySelectorAll('input[name="tag"]:checked')).map(t => t.value);
 
-      const id = 'outfit-' + code.replace(/[^a-zA-Z0-9]/g, '').slice(-6).toLowerCase();
+      const id = 'outfit-' + codeSlug;
       const today = new Date().toISOString().split('T')[0];
 
       const outfit = {
