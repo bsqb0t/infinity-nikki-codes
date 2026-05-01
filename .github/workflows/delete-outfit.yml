@@ -4,27 +4,26 @@ on:
   issues:
     types: [opened]
 
+permissions:
+  issues: write
+  contents: write
+  pull-requests: write
+
 jobs:
   delete-outfit:
     runs-on: ubuntu-latest
     if: contains(github.event.issue.title, '[删除]')
-    permissions:
-      issues: write
-      contents: write
-      pull-requests: write
     steps:
       - name: 检出代码
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: 解析并执行删除
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         id: delete
         with:
           script: |
             const fs = require('fs');
             const title = context.payload.issue.title;
-
-            // 从标题提取 ID，格式：[删除] outfit-001
             const idMatch = title.match(/\[删除\]\s*(\S+)/);
             if (!idMatch) {
               core.setFailed('标题格式错误，应为：[删除] outfit-xxx');
@@ -33,7 +32,6 @@ jobs:
             const targetId = idMatch[1].trim();
             core.setOutput('id', targetId);
 
-            // 读取数据库
             const db = JSON.parse(fs.readFileSync('data/outfits.json', 'utf8'));
             const idx = db.outfits.findIndex(o => o.id === targetId);
 
@@ -46,7 +44,6 @@ jobs:
             const removed = db.outfits.splice(idx, 1)[0];
             core.setOutput('name', removed.name);
 
-            // 收集要删除的图片文件
             const imagesToRemove = [];
             if (removed.images) imagesToRemove.push(...removed.images);
             if (removed.thumbnail && !imagesToRemove.includes(removed.thumbnail)) {
@@ -54,13 +51,12 @@ jobs:
             }
             core.setOutput('images', JSON.stringify(imagesToRemove));
 
-            // 写回数据库
             db.lastUpdated = new Date().toISOString();
             fs.writeFileSync('data/outfits.json', JSON.stringify(db, null, 2) + '\n');
-            core.info('已从数据库移除: ' + targetId + ' (' + removed.name + ')');
+            core.info('已移除: ' + targetId + ' (' + removed.name + ')');
 
       - name: 删除图片文件
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const images = JSON.parse('${{ steps.delete.outputs.images }}' || '[]');
@@ -80,14 +76,14 @@ jobs:
                   message: '删除图片: ' + filename,
                   sha: file.data.sha
                 });
-                core.info('已删除图片: ' + path);
+                core.info('已删除: ' + path);
               } catch (e) {
-                core.info('图片不存在或已删除: ' + path);
+                core.info('图片不存在: ' + path);
               }
             }
 
       - name: 创建 PR
-        uses: peter-evans/create-pull-request@v6
+        uses: peter-evans/create-pull-request@v7
         with:
           commit-message: "删除搭配码: ${{ steps.delete.outputs.id }}"
           branch: "delete/${{ steps.delete.outputs.id }}"
@@ -102,8 +98,8 @@ jobs:
 
           labels: outfit-delete
 
-      - name: Issue 留言
-        uses: actions/github-script@v7
+      - name: 关闭 Issue 并留言
+        uses: actions/github-script@v8
         with:
           script: |
             await github.rest.issues.createComment({
@@ -117,4 +113,10 @@ jobs:
               repo: context.repo.repo,
               issue_number: context.issue.number,
               labels: ['已处理']
+            });
+            await github.rest.issues.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              state: 'closed'
             });
