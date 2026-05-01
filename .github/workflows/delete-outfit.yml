@@ -18,10 +18,10 @@ jobs:
     if: contains(github.event.issue.title, '[删除]')
     steps:
       - name: 检出代码
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: 解析并执行删除
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         id: delete
         with:
           script: |
@@ -59,7 +59,7 @@ jobs:
             core.info('已移除: ' + targetId + ' (' + removed.name + ')');
 
       - name: 删除图片文件
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         with:
           script: |
             const images = JSON.parse('${{ steps.delete.outputs.images }}' || '[]');
@@ -86,7 +86,7 @@ jobs:
             }
 
       - name: 创建 PR
-        uses: peter-evans/create-pull-request@v7
+        uses: peter-evans/create-pull-request@v8
         with:
           commit-message: "删除搭配码: ${{ steps.delete.outputs.id }}"
           branch: "delete/${{ steps.delete.outputs.id }}"
@@ -102,7 +102,7 @@ jobs:
           labels: outfit-delete
 
       - name: 关闭 Issue 并留言
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         with:
           script: |
             await github.rest.issues.createComment({
