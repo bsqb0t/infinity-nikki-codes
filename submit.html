@@ -112,8 +112,8 @@
         <input type="text" id="author" placeholder="例如：花间小暖">
       </div>
       <div class="form-group">
-        <label>图片文件名 <span class="hint">（选填，稍后在 Issue 中上传图片）</span></label>
-        <input type="text" id="imageName" placeholder="例如：outfit-007-front.webp">
+        <label>图片 <span class="hint">（选填，提交 Issue 时直接拖入图片即可，无需填写此项）</span></label>
+        <input type="text" id="imageName" placeholder="留空，图片在 Issue 中直接拖入上传">
       </div>
       <button type="submit" class="submit-btn" onclick="generateResult()">生成提交文本</button>
     </form>
@@ -134,15 +134,14 @@
         <span class="step-title">到 GitHub 提交 Issue</span>
         <div class="step-desc">
           <ol style="margin:8px 0;padding-left:20px;line-height:2;">
-            <li>点击下方按钮打开 Issues 页面</li>
-            <li>点右上角绿色的 <strong>New issue</strong> 按钮</li>
+            <li>点击下方按钮打开提交页面</li>
             <li>Title（标题）填写：<code>[搭配码] <span id="issueNameHint">搭配名称</span></code></li>
             <li>正文区域 <strong>粘贴</strong>刚才复制的文本</li>
             <li>如有图片，直接把图片文件 <strong>拖入</strong> 正文编辑区域</li>
             <li>点 <strong>Submit new issue</strong> 提交</li>
           </ol>
         </div>
-        <a id="issueLink" class="issue-link" href="#" target="_blank">打开 GitHub Issues 页面</a>
+        <a id="issueLink" class="issue-link" href="#" target="_blank">打开 GitHub 提交页面</a>
       </div>
 
       <div class="step">
