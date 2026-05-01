@@ -16,42 +16,26 @@ jobs:
       - name: 检出代码
         uses: actions/checkout@v4
 
-      - name: 解析 Issue 内容
+      - name: 解析 Issue 中的 JSON
         uses: actions/github-script@v7
         id: parse
         with:
           script: |
             const body = context.payload.issue.body || '';
-
-            // 解析 JSON
-            const jsonMatch = body.match(/```json\s*([\s\S]*?)\s*```/);
-            if (!jsonMatch) {
-              core.setFailed('未找到 JSON 数据块');
+            const match = body.match(/```json\s*([\s\S]*?)\s*```/);
+            if (!match) {
+              core.setFailed('未找到 JSON 数据块。请确保正文包含 ```json ... ``` 格式的数据。');
               return;
             }
-            const data = JSON.parse(jsonMatch[1]);
+            const data = JSON.parse(match[1]);
+            if (!data.id || !data.code || !data.name) {
+              core.setFailed('JSON 缺少必要字段（id / code / name）');
+              return;
+            }
             core.setOutput('json', JSON.stringify(data));
             core.setOutput('id', data.id);
             core.setOutput('name', data.name);
-
-            // 解析图片 base64 数据（可选）
-            const imgMatch = body.match(/## IMAGE_DATA\s*\n文件名:\s*(\S+)\s*\n```\n([\s\S]*?)\n```/);
-            if (imgMatch) {
-              core.setOutput('image_filename', imgMatch[1]);
-              core.setOutput('image_base64', imgMatch[2].trim());
-              core.info('找到图片: ' + imgMatch[1]);
-            } else {
-              core.setOutput('image_filename', '');
-              core.setOutput('image_base64', '');
-              core.info('未找到图片数据');
-            }
-
-      - name: 保存图片文件
-        if: steps.parse.outputs.image_base64 != ''
-        run: |
-          mkdir -p images
-          echo "${{ steps.parse.outputs.image_base64 }}" | base64 -d > "images/${{ steps.parse.outputs.image_filename }}"
-          ls -la "images/${{ steps.parse.outputs.image_filename }}"
+            core.setOutput('has_images', data.images && data.images.length > 0 ? 'true' : 'false');
 
       - name: 更新 outfits.json
         uses: actions/github-script@v7
@@ -61,7 +45,6 @@ jobs:
             const data = JSON.parse(process.env.OUTFIT_JSON);
             const db = JSON.parse(fs.readFileSync('data/outfits.json', 'utf8'));
 
-            // 检查是否已存在
             if (db.outfits.some(o => o.id === data.id)) {
               core.setFailed('搭配码 ID 已存在: ' + data.id);
               return;
@@ -70,11 +53,11 @@ jobs:
             db.outfits.push(data);
             db.lastUpdated = new Date().toISOString();
             fs.writeFileSync('data/outfits.json', JSON.stringify(db, null, 2) + '\n');
-            core.info('已添加搭配码: ' + data.id);
+            core.info('已添加: ' + data.id);
         env:
           OUTFIT_JSON: ${{ steps.parse.outputs.json }}
 
-      - name: 创建分支并提交 PR
+      - name: 创建 PR
         uses: peter-evans/create-pull-request@v6
         with:
           commit-message: "添加搭配码: ${{ steps.parse.outputs.name }}"
@@ -83,28 +66,22 @@ jobs:
           body: |
             自动从 Issue #${{ github.event.issue.number }} 生成
 
-            **搭配码：** ${{ steps.parse.outputs.id }}
+            **搭配码：** `${{ steps.parse.outputs.id }}`
             **名称：** ${{ steps.parse.outputs.name }}
-            **图片：** ${{ steps.parse.outputs.image_filename || '无' }}
 
-            > 如需修改，请直接编辑此 PR 中的文件
+            ${{ steps.parse.outputs.has_images == 'true' && '> 注意：此搭配码引用了图片，请确认图片已上传到 `images/` 目录。' || '' }}
 
           labels: outfit-code
 
-      - name: 在 Issue 中留言
+      - name: Issue 留言
         uses: actions/github-script@v7
         with:
           script: |
-            let msg = '已自动创建 Pull Request，请等待维护者审核合并。合并后网站将自动更新。';
-            const imgFile = '${{ steps.parse.outputs.image_filename }}';
-            if (imgFile) {
-              msg += '\n\n图片已自动保存: `images/' + imgFile + '`';
-            }
             await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.issue.number,
-              body: msg
+              body: '已自动创建 Pull Request，请等待维护者审核合并。合并后网站将自动更新。'
             });
             await github.rest.issues.addLabels({
               owner: context.repo.owner,
