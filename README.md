@@ -102,7 +102,7 @@ GitHub Action 会自动创建删除 PR，维护者审核合并后网站自动更
 
 **原因：** `js/config.js` 中的 `user` 和 `repo` 没有被替换，还是 `YOUR_USERNAME`。
 
-**解决：** 确认 Cloudflare Pages 的环境变量 `GITHUB_USER` 和 `GITHUB_REPO` 填写正确，并确认构建命令填写了 README 中的那一长串 `node -e ...`，然后触发重新部署。
+**解决：** 确认 Cloudflare Pages 的环境变量 `GITHUB_USER` 和 `GITHUB_REPO` 填写正确，并确认构建命令为 `bash build.sh`，然后触发重新部署。
 
 ### 4. 提交搭配码页面提示「仓库信息未配置」
 
@@ -135,8 +135,9 @@ GitHub Action 会自动创建删除 PR，维护者审核合并后网站自动更
 ```
 ├── index.html              首页
 ├── submit.html             提交搭配码页面
+├── build.sh                构建脚本（Cloudflare Pages 自动执行）
 ├── css/                    样式文件
-├── js/config.js            部署配置（通过环境变量自动填充）
+├── js/config.js            部署配置（构建时由 build.sh 自动填充）
 ├── js/app.js               应用逻辑
 ├── data/outfits.json       搭配码数据库
 ├── images/                 搭配演示图片
