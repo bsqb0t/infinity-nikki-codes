@@ -82,23 +82,51 @@ GitHub Action 会自动创建删除 PR，维护者审核合并后网站自动更
 
 ---
 
-## 常见问题
+## 部署踩坑记录
 
-### 提交搭配码时跳转 GitHub 404？
+以下是实际部署中遇到过的问题和解决方法：
 
-确认 Cloudflare Pages 环境变量 `GITHUB_USER` 和 `GITHUB_REPO` 填写正确并已重新部署。跳转前也会弹出输入框让你手动填写。
+### 1. GitHub Actions 报错「not permitted to create or approve pull requests」
 
-### 部署后页面空白？
+**原因：** 仓库默认禁止 Actions 创建 PR。
 
-打开浏览器开发者工具（F12），查看 Console 标签页的报错信息。最常见原因是环境变量没填或填错。
+**解决：** 打开仓库 → Settings → Actions → General → Workflow permissions → 选 **Read and write permissions** → 勾选 **Allow GitHub Actions to create and approve pull requests** → Save。
 
-### 图片怎么上传？
+### 2. GitHub Actions 报 Node.js 20 弃用警告
 
-在提交 Issue 时，直接把图片文件**拖入 Issue 正文编辑区域**即可自动上传。GitHub 会生成图片链接。
+**原因：** Actions 默认运行时从 Node.js 20 迁移到 24。
 
-### 想自定义域名？
+**解决：** workflow 文件中已设置 `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true`，并将 actions 升级到最新版（checkout@v6、github-script@v9、create-pull-request@v8）。如果仍有警告，确认你的 workflow 文件与仓库中的一致。
 
-在 Cloudflare Pages 项目设置里点 **自定义域**，输入你的域名即可（需使用 Cloudflare DNS）。
+### 3. 网站部署后图片不显示
+
+**原因：** `js/config.js` 中的 GitHub 用户名/仓库名还是占位符 `__GITHUB_USER__`。
+
+**解决：** 确认 Cloudflare Pages 的环境变量 `GITHUB_USER` 和 `GITHUB_REPO` 填写正确，并触发一次重新部署（Deployments → Retry deployment）。
+
+### 4. 提交搭配码页面跳转 GitHub 404
+
+**原因：** 同上，config 未正确替换导致链接地址错误。
+
+**解决：** 同上。跳转前页面会弹出输入框让你手动填写用户名和仓库名作为兜底。
+
+### 5. Fine-grained PAT 权限不足
+
+**原因：** GitHub Fine-grained Personal Access Token 需要单独授权每个权限项。
+
+**解决：** 建议使用 Classic token（Settings → Developer settings → Personal access tokens → Tokens (classic)），勾选 `repo` 权限即可。如果用 Fine-grained token，至少需要以下权限：
+- **Contents:** Read and write
+- **Actions:** Read and write（用于修改 workflow 文件）
+- **Pull requests:** Read and write
+- **Issues:** Read and write
+
+### 6. 图片上传
+
+提交 Issue 时，直接把图片文件**拖入 Issue 正文编辑区域**即可自动上传，GitHub 会生成图片链接。不需要提前上传到仓库。
+
+### 7. 自定义域名
+
+在 Cloudflare Pages 项目设置里点 **自定义域**，输入你的域名（需使用 Cloudflare DNS），SSL 证书会自动配置。
 
 ---
 
