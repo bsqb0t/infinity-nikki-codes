@@ -208,7 +208,10 @@
 
       // 跳转链接：只跳到 Issues 页面，不预填内容
       let { user, repo } = SITE_CONFIG.github;
-      if (!user || user.includes('__') || !repo || repo.includes('__')) {
+      function isPlaceholder(v) {
+        return !v || v.includes('__') || v.includes('YOUR_') || v === 'YOUR_USERNAME' || v === 'YOUR_REPO';
+      }
+      if (isPlaceholder(user) || isPlaceholder(repo)) {
         user = prompt('请输入你的 GitHub 用户名：', '');
         if (!user) return;
         repo = prompt('请输入仓库名：', 'infinity-nikki-codes');
