@@ -36,6 +36,10 @@ jobs:
               core.setFailed('JSON 缺少必要字段（id / code / name）');
               return;
             }
+            if (data.id === 'outfit-' || data.id.length < 9) {
+              core.setFailed('ID 无效: ' + data.id + '。搭配码中需要包含字母或数字。');
+              return;
+            }
 
             // 从 Issue 正文中提取附件图片 URL（GitHub 上传的图片）
             const imgUrls = [];
