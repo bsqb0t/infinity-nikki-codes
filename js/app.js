@@ -43,9 +43,11 @@ function nikkiApp() {
 
     // === 数据加载 ===
     async loadData() {
-      // 检查 sessionStorage 缓存
+      // 检查 sessionStorage 缓存（5 分钟过期）
       const cached = sessionStorage.getItem('nikki-outfits-data');
-      if (cached) {
+      const cacheTime = sessionStorage.getItem('nikki-outfits-time');
+      const CACHE_TTL = 5 * 60 * 1000;
+      if (cached && cacheTime && (Date.now() - parseInt(cacheTime) < CACHE_TTL)) {
         try {
           const data = JSON.parse(cached);
           this.categories = data.categories;
@@ -55,6 +57,7 @@ function nikkiApp() {
           return;
         } catch (e) {
           sessionStorage.removeItem('nikki-outfits-data');
+          sessionStorage.removeItem('nikki-outfits-time');
         }
       }
 
@@ -69,6 +72,7 @@ function nikkiApp() {
 
         // 缓存到 sessionStorage
         sessionStorage.setItem('nikki-outfits-data', JSON.stringify(data));
+        sessionStorage.setItem('nikki-outfits-time', String(Date.now()));
       } catch (err) {
         this.error = '加载数据失败，请刷新页面重试';
         console.error('Failed to load outfits data:', err);
