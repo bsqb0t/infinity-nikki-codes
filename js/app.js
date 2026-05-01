@@ -193,7 +193,8 @@ function nikkiApp() {
 
     get currentModalImage() {
       if (!this.modalOutfit) return '';
-      return this.modalOutfit.imageUrls[this.modalImageIndex] || this.modalOutfit.thumbnailUrl;
+      const img = this.modalOutfit.imageUrls[this.modalImageIndex] || this.modalOutfit.thumbnailUrl;
+      return img || '';
     },
 
     get hasMultipleImages() {
