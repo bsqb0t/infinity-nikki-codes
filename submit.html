@@ -206,18 +206,24 @@
       document.getElementById('issueNameHint').textContent = name;
       document.getElementById('resultBox').classList.add('show');
 
-      // 跳转链接：只跳到 Issues 页面，不预填内容
+      // 跳转链接：从 config 或 localStorage 读取仓库信息
       let { user, repo } = SITE_CONFIG.github;
       function isPlaceholder(v) {
-        return !v || v.includes('__') || v.includes('YOUR_') || v === 'YOUR_USERNAME' || v === 'YOUR_REPO';
+        return !v || v.includes('__') || v.includes('YOUR_');
       }
+      // config 没配好就从 localStorage 读
       if (isPlaceholder(user) || isPlaceholder(repo)) {
-        user = prompt('请输入你的 GitHub 用户名：', '');
+        user = localStorage.getItem('nikki-gh-user') || '';
+        repo = localStorage.getItem('nikki-gh-repo') || '';
+      }
+      // 还是没有就让用户输入，存起来
+      if (!user || !repo) {
+        user = prompt('请输入部署网站的 GitHub 用户名：', user || '');
         if (!user) return;
-        repo = prompt('请输入仓库名：', 'infinity-nikki-codes');
+        repo = prompt('请输入仓库名：', repo || 'infinity-nikki-codes');
         if (!repo) return;
-        SITE_CONFIG.github.user = user;
-        SITE_CONFIG.github.repo = repo;
+        localStorage.setItem('nikki-gh-user', user);
+        localStorage.setItem('nikki-gh-repo', repo);
       }
       document.getElementById('issueLink').href = 'https://github.com/' + user + '/' + repo + '/issues/new';
 
