@@ -274,6 +274,10 @@
               · ❤️ <span x-text="modalOutfit.likes"></span>
             </span>
           </div>
+          <div style="margin-top: 12px; font-size: 0.8rem; color: var(--text-muted); display: flex; align-items: center; gap: 8px;">
+            <span>ID: <code x-text="modalOutfit.id" style="font-size: 0.8rem;"></code></span>
+            <button @click="copyCode(modalOutfit.id, $event)" style="padding: 2px 8px; border-radius: 9999px; font-size: 0.75rem; border: 1px solid var(--border-light); color: var(--text-muted);">复制 ID</button>
+          </div>
         </div>
       </div>
     </div>
