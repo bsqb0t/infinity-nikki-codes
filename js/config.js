@@ -1,6 +1,11 @@
 /**
  * 站点部署配置
- * 修改 user 和 repo 为你的 GitHub 用户名和仓库名
+ * 通过 Cloudflare Pages 构建命令自动填充，无需手动修改
+ *
+ * 构建命令填：
+ *   node -e "const f='js/config.js';let c=require('fs').readFileSync(f,'utf8');c=c.replace('YOUR_USERNAME',process.env.GITHUB_USER).replace('YOUR_REPO',process.env.GITHUB_REPO);require('fs').writeFileSync(f,c)"
+ *
+ * 环境变量：GITHUB_USER（用户名）、GITHUB_REPO（仓库名）
  */
 const SITE_CONFIG = {
   github: {
@@ -15,11 +20,6 @@ const SITE_CONFIG = {
   }
 };
 
-/**
- * 生成图片 URL
- * - 完整 URL（http/https 开头）直接返回（如 GitHub Issue 附件）
- * - 文件名则拼接 raw.githubusercontent.com 路径
- */
 function getImageUrl(filename) {
   if (!filename) return '';
   if (filename.startsWith('http://') || filename.startsWith('https://')) {
