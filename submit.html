@@ -212,7 +212,7 @@
         user = localStorage.getItem('nikki-gh-user') || '';
         repo = localStorage.getItem('nikki-gh-repo') || '';
         if (!user || !repo) {
-          alert('仓库信息未配置！\n\n请确认：\n1. Cloudflare Pages 环境变量已设置 GITHUB_USER 和 GITHUB_REPO\n2. 构建命令已填写（见 README）\n3. 已触发重新部署');
+          alert('仓库信息未配置！\n\n请确认：\n1. Cloudflare Pages → Settings → Environment variables 中已设置 GITHUB_USER 和 GITHUB_REPO\n2. Cloudflare Pages → Settings → Build 中构建命令填写了 bash build.sh\n3. 以上配置后已重新部署（Deployments → Retry deployment）\n\n如仍有问题，查看 Deployments 页面的构建日志确认 build.sh 是否执行成功');
           return;
         }
       }

@@ -27,7 +27,7 @@
 | 配置项 | 填什么 |
 |--------|--------|
 | **框架预设** | 选 `None`（无） |
-| **构建命令** | `node -e "const f='js/config.js';let c=require('fs').readFileSync(f,'utf8');c=c.replace('YOUR_USERNAME',process.env.GITHUB_USER).replace('YOUR_REPO',process.env.GITHUB_REPO);require('fs').writeFileSync(f,c)"` |
+| **构建命令** | `bash build.sh` |
 | **构建输出目录** | `/` |
 
 然后往下滚动，找到 **环境变量** 部分，点 **添加变量**，添加以下两个：

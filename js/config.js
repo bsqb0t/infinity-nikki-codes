@@ -2,9 +2,7 @@
  * 站点部署配置
  * 通过 Cloudflare Pages 构建命令自动填充，无需手动修改
  *
- * 构建命令填：
- *   node -e "const f='js/config.js';let c=require('fs').readFileSync(f,'utf8');c=c.replace('YOUR_USERNAME',process.env.GITHUB_USER).replace('YOUR_REPO',process.env.GITHUB_REPO);require('fs').writeFileSync(f,c)"
- *
+ * 构建命令填：bash build.sh
  * 环境变量：GITHUB_USER（用户名）、GITHUB_REPO（仓库名）
  */
 const SITE_CONFIG = {
