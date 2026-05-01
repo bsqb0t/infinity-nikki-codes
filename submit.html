@@ -206,24 +206,15 @@
       document.getElementById('issueNameHint').textContent = name;
       document.getElementById('resultBox').classList.add('show');
 
-      // 跳转链接：从 config 或 localStorage 读取仓库信息
+      // 跳转链接：优先用 config（构建时注入），回退 localStorage
       let { user, repo } = SITE_CONFIG.github;
-      function isPlaceholder(v) {
-        return !v || v.includes('__') || v.includes('YOUR_');
-      }
-      // config 没配好就从 localStorage 读
-      if (isPlaceholder(user) || isPlaceholder(repo)) {
+      if (!user || user === 'YOUR_USERNAME' || !repo || repo === 'YOUR_REPO') {
         user = localStorage.getItem('nikki-gh-user') || '';
         repo = localStorage.getItem('nikki-gh-repo') || '';
-      }
-      // 还是没有就让用户输入，存起来
-      if (!user || !repo) {
-        user = prompt('请输入部署网站的 GitHub 用户名：', user || '');
-        if (!user) return;
-        repo = prompt('请输入仓库名：', repo || 'infinity-nikki-codes');
-        if (!repo) return;
-        localStorage.setItem('nikki-gh-user', user);
-        localStorage.setItem('nikki-gh-repo', repo);
+        if (!user || !repo) {
+          alert('仓库信息未配置！\n\n请确认：\n1. Cloudflare Pages 环境变量已设置 GITHUB_USER 和 GITHUB_REPO\n2. 构建命令已填写（见 README）\n3. 已触发重新部署');
+          return;
+        }
       }
       document.getElementById('issueLink').href = 'https://github.com/' + user + '/' + repo + '/issues/new';
 

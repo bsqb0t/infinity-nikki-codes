@@ -27,14 +27,19 @@
 | 配置项 | 填什么 |
 |--------|--------|
 | **框架预设** | 选 `None`（无） |
-| **构建命令** | （留空） |
+| **构建命令** | `node -e "const f='js/config.js';let c=require('fs').readFileSync(f,'utf8');c=c.replace('YOUR_USERNAME',process.env.GITHUB_USER).replace('YOUR_REPO',process.env.GITHUB_REPO);require('fs').writeFileSync(f,c)"` |
 | **构建输出目录** | `/` |
+
+然后往下滚动，找到 **环境变量** 部分，点 **添加变量**，添加以下两个：
+
+| 变量名 | 值 | 说明 |
+|--------|----|------|
+| `GITHUB_USER` | 你的 GitHub 用户名 | 例如 `zhangsan` |
+| `GITHUB_REPO` | 你的仓库名 | 例如 `infinity-nikki-codes` |
 
 最后点 **保存并部署**。等大约 30 秒，网站就上线了！
 
 访问地址：`https://你的项目名.pages.dev`
-
-> Fork 后如果改了仓库名，需要编辑 `js/config.js`，把 `user` 和 `repo` 改成你自己的，然后重新部署。
 
 ---
 
@@ -95,15 +100,15 @@ GitHub Action 会自动创建删除 PR，维护者审核合并后网站自动更
 
 ### 3. 网站部署后图片不显示
 
-**原因：** `js/config.js` 中的 `user` 和 `repo` 与实际仓库不匹配。
+**原因：** `js/config.js` 中的 `user` 和 `repo` 没有被替换，还是 `YOUR_USERNAME`。
 
-**解决：** 编辑仓库中的 `js/config.js`，确认 `user` 和 `repo` 是你的 GitHub 用户名和仓库名，提交后 Cloudflare Pages 会自动重新部署。
+**解决：** 确认 Cloudflare Pages 的环境变量 `GITHUB_USER` 和 `GITHUB_REPO` 填写正确，并确认构建命令填写了 README 中的那一长串 `node -e ...`，然后触发重新部署。
 
-### 4. 提交搭配码页面跳转 GitHub 404
+### 4. 提交搭配码页面提示「仓库信息未配置」
 
-**原因：** 同上，config 中的仓库信息不正确。
+**原因：** 同上，构建时环境变量没有正确注入。
 
-**解决：** 同上。跳转前页面也会弹出输入框让你手动填写。
+**解决：** 同上。环境变量和构建命令缺一不可。
 
 ### 5. Fine-grained PAT 权限不足
 
