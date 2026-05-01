@@ -1,0 +1,120 @@
+name: 删除搭配码
+
+on:
+  issues:
+    types: [opened]
+
+jobs:
+  delete-outfit:
+    runs-on: ubuntu-latest
+    if: contains(github.event.issue.title, '[删除]')
+    permissions:
+      issues: write
+      contents: write
+      pull-requests: write
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 解析并执行删除
+        uses: actions/github-script@v7
+        id: delete
+        with:
+          script: |
+            const fs = require('fs');
+            const title = context.payload.issue.title;
+
+            // 从标题提取 ID，格式：[删除] outfit-001
+            const idMatch = title.match(/\[删除\]\s*(\S+)/);
+            if (!idMatch) {
+              core.setFailed('标题格式错误，应为：[删除] outfit-xxx');
+              return;
+            }
+            const targetId = idMatch[1].trim();
+            core.setOutput('id', targetId);
+
+            // 读取数据库
+            const db = JSON.parse(fs.readFileSync('data/outfits.json', 'utf8'));
+            const idx = db.outfits.findIndex(o => o.id === targetId);
+
+            if (idx === -1) {
+              const available = db.outfits.map(o => o.id + ' (' + o.name + ')').join('\n- ');
+              core.setFailed('未找到搭配码: ' + targetId + '\n\n当前可用的 ID：\n- ' + available);
+              return;
+            }
+
+            const removed = db.outfits.splice(idx, 1)[0];
+            core.setOutput('name', removed.name);
+
+            // 收集要删除的图片文件
+            const imagesToRemove = [];
+            if (removed.images) imagesToRemove.push(...removed.images);
+            if (removed.thumbnail && !imagesToRemove.includes(removed.thumbnail)) {
+              imagesToRemove.push(removed.thumbnail);
+            }
+            core.setOutput('images', JSON.stringify(imagesToRemove));
+
+            // 写回数据库
+            db.lastUpdated = new Date().toISOString();
+            fs.writeFileSync('data/outfits.json', JSON.stringify(db, null, 2) + '\n');
+            core.info('已从数据库移除: ' + targetId + ' (' + removed.name + ')');
+
+      - name: 删除图片文件
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const images = JSON.parse('${{ steps.delete.outputs.images }}' || '[]');
+            for (const filename of images) {
+              const path = 'images/' + filename;
+              try {
+                const file = await github.rest.repos.getContent({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  path: path,
+                  ref: context.sha
+                });
+                await github.rest.repos.deleteFile({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  path: path,
+                  message: '删除图片: ' + filename,
+                  sha: file.data.sha
+                });
+                core.info('已删除图片: ' + path);
+              } catch (e) {
+                core.info('图片不存在或已删除: ' + path);
+              }
+            }
+
+      - name: 创建 PR
+        uses: peter-evans/create-pull-request@v6
+        with:
+          commit-message: "删除搭配码: ${{ steps.delete.outputs.id }}"
+          branch: "delete/${{ steps.delete.outputs.id }}"
+          title: "[删除] ${{ steps.delete.outputs.name }} (${{ steps.delete.outputs.id }})"
+          body: |
+            自动从 Issue #${{ github.event.issue.number }} 生成
+
+            **删除目标：** `${{ steps.delete.outputs.id }}`
+            **搭配名称：** ${{ steps.delete.outputs.name }}
+
+            请确认后合并此 PR。
+
+          labels: outfit-delete
+
+      - name: Issue 留言
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: '已自动创建删除 PR，请等待维护者审核合并。\n\n搭配码: `${{ steps.delete.outputs.id }}` (${{ steps.delete.outputs.name }})'
+            });
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              labels: ['已处理']
+            });
