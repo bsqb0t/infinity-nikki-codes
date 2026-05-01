@@ -45,6 +45,9 @@
     .step-num { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; background: var(--color-primary); color: var(--text-inverse); border-radius: 50%; font-size: 0.85rem; font-weight: 700; margin-right: var(--space-sm); vertical-align: middle; }
     .step-title { font-weight: 600; }
     .step-desc { margin-top: var(--space-sm); color: var(--text-secondary); font-size: 0.95rem; line-height: 1.7; }
+    .step-desc ol { margin: 8px 0; padding-left: 20px; }
+    .step-desc ol li { padding: 2px 0; }
+    .step-desc code { background: var(--color-primary-bg); padding: 2px 6px; border-radius: 4px; font-size: 0.85rem; }
     .json-preview { background: var(--color-primary-bg); border-radius: var(--radius-sm); padding: var(--space-md); font-family: "SF Mono", "Fira Code", monospace; font-size: 0.85rem; overflow-x: auto; white-space: pre-wrap; word-break: break-all; max-height: 240px; overflow-y: auto; margin: var(--space-md) 0; position: relative; }
     .copy-btn { padding: 10px 24px; background: var(--color-primary); color: var(--text-inverse); border-radius: var(--radius-full); font-weight: 600; transition: all var(--transition-fast); }
     .copy-btn:hover { background: var(--color-primary-dark); }
@@ -116,20 +119,28 @@
     </form>
 
     <div id="resultBox" class="result-box">
-      <h3>按以下步骤操作：</h3>
+      <h3>提交文本已生成！按以下 3 步操作：</h3>
 
       <div class="step">
         <span class="step-num">1</span>
-        <span class="step-title">复制下面的提交文本</span>
+        <span class="step-title">复制提交文本</span>
+        <div class="step-desc">点击下方按钮复制，这段文本包含了你的搭配码全部信息。</div>
         <div class="json-preview" id="jsonPreview"></div>
         <button class="copy-btn" onclick="copyJson()">复制文本</button>
       </div>
 
       <div class="step">
         <span class="step-num">2</span>
-        <span class="step-title">前往 GitHub 提交 Issue</span>
+        <span class="step-title">到 GitHub 提交 Issue</span>
         <div class="step-desc">
-          点击下方按钮打开 Issues 页面 → 点 <strong>New issue</strong> → 标题填 <code>[搭配码] 搭配名称</code> → 正文粘贴刚才复制的文本 → 如有图片直接拖入正文区域上传 → 点 <strong>Submit new issue</strong>
+          <ol style="margin:8px 0;padding-left:20px;line-height:2;">
+            <li>点击下方按钮打开 Issues 页面</li>
+            <li>点右上角绿色的 <strong>New issue</strong> 按钮</li>
+            <li>Title（标题）填写：<code>[搭配码] <span id="issueNameHint">搭配名称</span></code></li>
+            <li>正文区域 <strong>粘贴</strong>刚才复制的文本</li>
+            <li>如有图片，直接把图片文件 <strong>拖入</strong> 正文编辑区域</li>
+            <li>点 <strong>Submit new issue</strong> 提交</li>
+          </ol>
         </div>
         <a id="issueLink" class="issue-link" href="#" target="_blank">打开 GitHub Issues 页面</a>
       </div>
@@ -137,7 +148,14 @@
       <div class="step">
         <span class="step-num">3</span>
         <span class="step-title">等待自动处理</span>
-        <div class="step-desc">提交后 GitHub Action 会自动创建 Pull Request，维护者审核合并后网站自动更新。</div>
+        <div class="step-desc">
+          提交后系统会自动：<br>
+          &bull; 创建 Pull Request（合并请求）<br>
+          &bull; 关闭你的 Issue<br>
+          &bull; 维护者审核 merge 后网站自动更新（约 30 秒）<br>
+          <br>
+          <strong>编辑 Issue 会自动同步更新 PR</strong>，如果需要修改搭配信息，直接编辑你提交的 Issue 即可。
+        </div>
       </div>
     </div>
   </div>
@@ -178,6 +196,7 @@
 
       const text = '```json\n' + JSON.stringify(outfit, null, 2) + '\n```';
       document.getElementById('jsonPreview').textContent = text;
+      document.getElementById('issueNameHint').textContent = name;
       document.getElementById('resultBox').classList.add('show');
 
       // 跳转链接：只跳到 Issues 页面，不预填内容
