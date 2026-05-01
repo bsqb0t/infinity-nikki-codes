@@ -43,109 +43,59 @@
 
 ---
 
-## 添加新搭配码（不需要写代码）
+## 添加新搭配码
 
-### 使用网站提交页面（推荐）
+### 第 1 步：生成提交文本
 
-1. 打开你部署好的网站，点击右上角的 **+ 提交搭配码**
-2. 填写表单：搭配码、名称、分类等
-3. 上传搭配截图（会自动压缩，无需手动处理）
-4. 点 **生成数据并提交**
-5. 点 **在 GitHub 提交搭配码** 按钮，跳转到 GitHub Issue 页面
-6. Issue 内容已自动填好（包含 JSON 数据和图片），直接点 **Submit new issue** 即可
+打开你部署好的网站，点右上角 **+ 提交搭配码**，填写表单后点 **生成提交文本**，复制生成的内容。
 
-提交后 GitHub Action 会自动：
-- 提取搭配码数据和图片
+### 第 2 步：到 GitHub 提交 Issue
+
+1. 打开你仓库的 **Issues** 页面，点 **New issue**
+2. 标题填写：`[搭配码] 你的搭配名称`
+3. 正文**粘贴**刚才复制的文本
+4. 如果有图片，直接**拖入正文区域**上传（支持 jpg / png / webp）
+5. 点 **Submit new issue**
+
+### 第 3 步：等待自动处理
+
+GitHub Action 会自动：
+- 解析 Issue 中的搭配码数据
 - 创建 Pull Request
-- 维护者点一下 merge，网站自动更新
-
-### 在 GitHub 网页上手动添加
-
-适合需要更精细控制的场景，或者提交页面提示「需手动上传图片」时使用：
-
-**第一步：上传图片**
-
-1. 打开你的 GitHub 仓库页面
-2. 点击 `images` 文件夹进入
-3. 点击 **Add file** → **Upload files**
-4. 把图片文件拖入页面（建议 WebP 格式，文件名如 `outfit-007-front.webp`）
-5. 点 **Commit changes**
-
-**第二步：添加搭配码数据**
-
-1. 返回仓库主页，打开 `data/outfits.json`
-2. 点击右上角的 **✏️ 铅笔图标**（编辑）
-3. 在 `outfits` 数组的最后一个 `}` 后面加一个逗号，然后粘贴以下模板：
-
-```json
-{
-  "id": "outfit-007",
-  "code": "你的搭配码",
-  "name": "搭配名称",
-  "nameEn": "英文名",
-  "description": "搭配描述",
-  "descriptionEn": "",
-  "category": "cute",
-  "tags": ["popular"],
-  "images": ["outfit-007-front.webp"],
-  "thumbnail": "outfit-007-front.webp",
-  "author": { "name": "你的昵称", "link": "" },
-  "createdAt": "2026-05-01",
-  "featured": false,
-  "likes": 0
-}
-```
-
-4. 把 `outfit-007-front.webp` 改成你刚才上传的图片文件名
-5. 点 **Commit changes**
-
-网站会在 30 秒内自动更新。
-
-> **分类可选值：** cute(可爱)、elegant(优雅)、cool(酷帅)、fantasy(奇幻)、casual(休闲)、formal(正装)、seasonal(季节)、themed(主题)
->
-> **标签可选值：** popular(热门)、new(新品)、beginner(新手友好)、rare(稀有)、free(免费)、puzzle(解谜)、combat(战斗)
+- 维护者审核合并后网站自动更新（约 30 秒）
 
 ---
 
-## 删除搭配码（不需要写代码）
+## 删除搭配码
 
-1. 打开你部署好的网站，找到要删除的搭配码，点开详情，记下它的 **ID**（显示在详情底部，格式如 `outfit-001`）
+1. 打开网站，点开要删除的搭配详情，记下底部的 **ID**（格式如 `outfit-001`）
 2. 到 GitHub 仓库的 Issues 页面，点 **New issue**
-3. 标题填写：`[删除] outfit-001`（把 `outfit-001` 换成实际 ID）
-4. 直接点 **Submit new issue**
+3. 标题填写：`[删除] outfit-001`
+4. 直接提交
 
 GitHub Action 会自动创建删除 PR，维护者审核合并后网站自动更新。
 
-> 如果不记得 ID，可以在 Issue 标题里写搭配名称，Action 会报错提示可用的 ID 列表。
+> 如果不记得 ID，随便写个标题提交，Action 会报错并列出所有可用的 ID。
 
 ---
 
 ## 常见问题
 
-### 图片不显示？
-
-检查 Cloudflare Pages 环境变量中的 `GITHUB_USER` 和 `GITHUB_REPO` 是否填写正确。
-
 ### 提交搭配码时跳转 GitHub 404？
 
-说明网站的 GitHub 仓库信息没有配置好。有两种解决方式：
-
-- **方式一：** 确认 Cloudflare Pages 环境变量 `GITHUB_USER` 和 `GITHUB_REPO` 填写正确，重新部署
-- **方式二：** 跳转前会弹出输入框，直接输入你的 GitHub 用户名和仓库名即可
+确认 Cloudflare Pages 环境变量 `GITHUB_USER` 和 `GITHUB_REPO` 填写正确并已重新部署。跳转前也会弹出输入框让你手动填写。
 
 ### 部署后页面空白？
 
-打开浏览器开发者工具（F12），查看 Console 标签页的报错信息。最常见的原因是环境变量没填或填错了。
+打开浏览器开发者工具（F12），查看 Console 标签页的报错信息。最常见原因是环境变量没填或填错。
+
+### 图片怎么上传？
+
+在提交 Issue 时，直接把图片文件**拖入 Issue 正文编辑区域**即可自动上传。GitHub 会生成图片链接。
 
 ### 想自定义域名？
 
-在 Cloudflare Pages 项目设置里点 **自定义域**，输入你的域名即可。域名需要使用 Cloudflare 的 DNS。
-
-### 想修改网站标题或样式？
-
-- 标题：编辑 `js/config.js` 中的 `site.title`
-- 样式：编辑 `css/` 目录下的 CSS 文件
-- 改完推送到 GitHub，网站自动更新
+在 Cloudflare Pages 项目设置里点 **自定义域**，输入你的域名即可（需使用 Cloudflare DNS）。
 
 ---
 
