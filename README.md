@@ -41,6 +41,8 @@
 
 访问地址：`https://你的项目名.pages.dev`
 
+> **首次部署后网站是空的**，这是正常的。按照下方「添加新搭配码」的步骤提交第一个搭配码即可。
+
 ---
 
 ## 添加新搭配码
@@ -61,8 +63,7 @@
 
 提交后系统自动完成：
 - 解析 Issue 中的搭配码数据
-- 创建 Pull Request
-- **自动关闭 Issue**（PR 中会引用 Issue 编号）
+- 创建 Pull Request（PR 合并时自动关闭 Issue）
 - 维护者审核合并后网站自动更新（约 30 秒）
 
 > **需要修改？** 直接编辑你提交的 Issue，系统会自动同步更新对应的 PR，无需重新提交。
@@ -102,7 +103,7 @@ GitHub Action 会自动创建删除 PR，维护者审核合并后网站自动更
 
 **原因：** `js/config.js` 中的 `user` 和 `repo` 没有被替换，还是 `YOUR_USERNAME`。
 
-**解决：** 确认 Cloudflare Pages 的环境变量 `GITHUB_USER` 和 `GITHUB_REPO` 填写正确，并确认构建命令填写了 README 中的那一长串 `node -e ...`，然后触发重新部署。
+**解决：** 确认 Cloudflare Pages 的环境变量 `GITHUB_USER` 和 `GITHUB_REPO` 填写正确，并确认构建命令为 `bash build.sh`，然后触发重新部署。
 
 ### 4. 提交搭配码页面提示「仓库信息未配置」
 
@@ -135,13 +136,15 @@ GitHub Action 会自动创建删除 PR，维护者审核合并后网站自动更
 ```
 ├── index.html              首页
 ├── submit.html             提交搭配码页面
+├── build.sh                构建脚本（Cloudflare Pages 自动执行）
 ├── css/                    样式文件
-├── js/config.js            部署配置（通过环境变量自动填充）
+├── js/config.js            部署配置（构建时由 build.sh 自动填充）
 ├── js/app.js               应用逻辑
 ├── data/outfits.json       搭配码数据库
-├── images/                 搭配演示图片
 └── .github/workflows/      自动处理 Issue 的 GitHub Action
 ```
+
+> **关于图片：** 图片通过提交 Issue 时直接拖入附件上传，GitHub 自动生成链接，无需在仓库中维护图片目录。
 
 ## 许可证
 

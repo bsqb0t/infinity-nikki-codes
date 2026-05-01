@@ -43,9 +43,11 @@ function nikkiApp() {
 
     // === 数据加载 ===
     async loadData() {
-      // 检查 sessionStorage 缓存
+      // 检查 sessionStorage 缓存（5 分钟过期）
       const cached = sessionStorage.getItem('nikki-outfits-data');
-      if (cached) {
+      const cacheTime = sessionStorage.getItem('nikki-outfits-time');
+      const CACHE_TTL = 5 * 60 * 1000;
+      if (cached && cacheTime && (Date.now() - parseInt(cacheTime) < CACHE_TTL)) {
         try {
           const data = JSON.parse(cached);
           this.categories = data.categories;
@@ -55,6 +57,7 @@ function nikkiApp() {
           return;
         } catch (e) {
           sessionStorage.removeItem('nikki-outfits-data');
+          sessionStorage.removeItem('nikki-outfits-time');
         }
       }
 
@@ -69,6 +72,7 @@ function nikkiApp() {
 
         // 缓存到 sessionStorage
         sessionStorage.setItem('nikki-outfits-data', JSON.stringify(data));
+        sessionStorage.setItem('nikki-outfits-time', String(Date.now()));
       } catch (err) {
         this.error = '加载数据失败，请刷新页面重试';
         console.error('Failed to load outfits data:', err);
@@ -81,11 +85,8 @@ function nikkiApp() {
     processOutfits(outfits) {
       return outfits.map(outfit => ({
         ...outfit,
-        // 为每个图片文件名生成完整 URL
         imageUrls: outfit.images.map(img => getImageUrl(img)),
-        thumbnailUrl: outfit.thumbnail ? getImageUrl(outfit.thumbnail) : null,
-        // 获取分类信息
-        categoryInfo: this.getCategoryById(outfit.category)
+        thumbnailUrl: outfit.thumbnail ? getImageUrl(outfit.thumbnail) : null
       }));
     },
 
@@ -118,10 +119,6 @@ function nikkiApp() {
       }
 
       return result;
-    },
-
-    get featuredOutfits() {
-      return this.outfits.filter(o => o.featured);
     },
 
     get totalOutfits() {
@@ -267,15 +264,6 @@ function nikkiApp() {
       if (!dateStr) return '';
       const d = new Date(dateStr);
       return d.toLocaleDateString('zh-CN', { year: 'numeric', month: 'short', day: 'numeric' });
-    },
-
-    // 搜索防抖
-    _searchTimer: null,
-    onSearchInput() {
-      if (this._searchTimer) clearTimeout(this._searchTimer);
-      this._searchTimer = setTimeout(() => {
-        // 搜索已通过 Alpine.js 的 x-model 自动更新
-      }, 300);
     },
 
     // === 键盘事件 ===

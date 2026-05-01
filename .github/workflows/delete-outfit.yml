@@ -70,7 +70,7 @@ jobs:
                   owner: context.repo.owner,
                   repo: context.repo.repo,
                   path: path,
-                  ref: context.sha
+                  ref: context.payload.repository.default_branch
                 });
                 await github.rest.repos.deleteFile({
                   owner: context.repo.owner,
@@ -99,9 +99,11 @@ jobs:
 
             请确认后合并此 PR。
 
+            Fixes #${{ github.event.issue.number }}
+
           labels: outfit-delete
 
-      - name: 关闭 Issue 并留言
+      - name: 留言 Issue
         uses: actions/github-script@v9
         with:
           script: |
@@ -109,17 +111,11 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.issue.number,
-              body: '已自动创建删除 PR，请等待维护者审核合并。\n\n搭配码: `${{ steps.delete.outputs.id }}` (${{ steps.delete.outputs.name }})'
+              body: '已自动创建删除 PR，请等待维护者审核合并。\n\n搭配码: `${{ steps.delete.outputs.id }}` (${{ steps.delete.outputs.name }})\n\n合并后 Issue 会自动关闭。'
             });
             await github.rest.issues.addLabels({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.issue.number,
               labels: ['已处理']
-            });
-            await github.rest.issues.update({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
-              state: 'closed'
             });

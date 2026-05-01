@@ -3,6 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="提交无限暖暖搭配码到社区数据库">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' https://raw.githubusercontent.com https://github.com;">
   <title>提交搭配码 - 无限暖暖搭配码</title>
   <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -36,6 +38,7 @@
     .tag-checkboxes input { display: none; }
     .submit-btn { width: 100%; padding: 14px; background: var(--color-primary); color: var(--text-inverse); border-radius: var(--radius-full); font-size: 1.1rem; font-weight: 700; transition: all var(--transition-fast); }
     .submit-btn:hover { background: var(--color-primary-dark); transform: scale(1.01); }
+    .submit-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 
     .result-box { background: var(--bg-card); border: 2px solid var(--border-light); border-radius: var(--radius-md); padding: var(--space-lg); margin-top: var(--space-xl); display: none; }
     .result-box.show { display: block; animation: slideUp 0.3s ease; }
@@ -49,8 +52,8 @@
     .step-desc ol li { padding: 2px 0; }
     .step-desc code { background: var(--color-primary-bg); padding: 2px 6px; border-radius: 4px; font-size: 0.85rem; }
     .json-preview { background: var(--color-primary-bg); border-radius: var(--radius-sm); padding: var(--space-md); font-family: "SF Mono", "Fira Code", monospace; font-size: 0.85rem; overflow-x: auto; white-space: pre-wrap; word-break: break-all; max-height: 240px; overflow-y: auto; margin: var(--space-md) 0; position: relative; }
-    .copy-btn { padding: 10px 24px; background: var(--color-primary); color: var(--text-inverse); border-radius: var(--radius-full); font-weight: 600; transition: all var(--transition-fast); }
-    .copy-btn:hover { background: var(--color-primary-dark); }
+    .submit-copy-btn { padding: 10px 24px; background: var(--color-primary); color: var(--text-inverse); border-radius: var(--radius-full); font-weight: 600; transition: all var(--transition-fast); }
+    .submit-copy-btn:hover { background: var(--color-primary-dark); }
     .issue-link { display: inline-block; padding: 12px 28px; background: #238636; color: #fff; border-radius: var(--radius-full); font-weight: 600; text-decoration: none; transition: all var(--transition-fast); margin-top: var(--space-sm); }
     .issue-link:hover { background: #2ea043; color: #fff; transform: scale(1.02); }
     .toast { position: fixed; bottom: var(--space-xl); left: 50%; transform: translateX(-50%) translateY(100px); padding: 12px 28px; background: var(--text-heading); color: var(--text-inverse); border-radius: var(--radius-full); font-size: 0.9rem; box-shadow: var(--shadow-lg); z-index: 300; opacity: 0; transition: all var(--transition-normal); pointer-events: none; }
@@ -85,26 +88,13 @@
       <div class="form-group">
         <label>分类</label>
         <select id="category">
-          <option value="cute">可爱</option>
-          <option value="elegant">优雅</option>
-          <option value="cool">酷帅</option>
-          <option value="fantasy">奇幻</option>
-          <option value="casual">休闲</option>
-          <option value="formal">正装</option>
-          <option value="seasonal">季节</option>
-          <option value="themed">主题</option>
+          <option value="" disabled>加载中...</option>
         </select>
       </div>
       <div class="form-group">
         <label>标签 <span class="hint">（可多选）</span></label>
-        <div class="tag-checkboxes">
-          <label><input type="checkbox" name="tag" value="popular"><span>热门</span></label>
-          <label><input type="checkbox" name="tag" value="new"><span>新品</span></label>
-          <label><input type="checkbox" name="tag" value="beginner"><span>新手友好</span></label>
-          <label><input type="checkbox" name="tag" value="rare"><span>稀有</span></label>
-          <label><input type="checkbox" name="tag" value="free"><span>免费</span></label>
-          <label><input type="checkbox" name="tag" value="puzzle"><span>解谜</span></label>
-          <label><input type="checkbox" name="tag" value="combat"><span>战斗</span></label>
+        <div class="tag-checkboxes" id="tagCheckboxes">
+          <span style="color:var(--text-muted);font-size:0.9rem;">加载中...</span>
         </div>
       </div>
       <div class="form-group">
@@ -112,8 +102,8 @@
         <input type="text" id="author" placeholder="例如：花间小暖">
       </div>
       <div class="form-group">
-        <label>图片文件名 <span class="hint">（选填，稍后在 Issue 中上传图片）</span></label>
-        <input type="text" id="imageName" placeholder="例如：outfit-007-front.webp">
+        <label>图片 <span class="hint">（选填，提交 Issue 时直接拖入图片即可，无需填写此项）</span></label>
+        <input type="text" id="imageName" placeholder="留空，图片在 Issue 中直接拖入上传">
       </div>
       <button type="submit" class="submit-btn" onclick="generateResult()">生成提交文本</button>
     </form>
@@ -126,7 +116,7 @@
         <span class="step-title">复制提交文本</span>
         <div class="step-desc">点击下方按钮复制，这段文本包含了你的搭配码全部信息。</div>
         <div class="json-preview" id="jsonPreview"></div>
-        <button class="copy-btn" onclick="copyJson()">复制文本</button>
+        <button class="submit-copy-btn" onclick="copyJson()">复制文本</button>
       </div>
 
       <div class="step">
@@ -134,15 +124,14 @@
         <span class="step-title">到 GitHub 提交 Issue</span>
         <div class="step-desc">
           <ol style="margin:8px 0;padding-left:20px;line-height:2;">
-            <li>点击下方按钮打开 Issues 页面</li>
-            <li>点右上角绿色的 <strong>New issue</strong> 按钮</li>
+            <li>点击下方按钮打开提交页面</li>
             <li>Title（标题）填写：<code>[搭配码] <span id="issueNameHint">搭配名称</span></code></li>
             <li>正文区域 <strong>粘贴</strong>刚才复制的文本</li>
             <li>如有图片，直接把图片文件 <strong>拖入</strong> 正文编辑区域</li>
             <li>点 <strong>Submit new issue</strong> 提交</li>
           </ol>
         </div>
-        <a id="issueLink" class="issue-link" href="#" target="_blank">打开 GitHub Issues 页面</a>
+        <a id="issueLink" class="issue-link" href="#" target="_blank">打开 GitHub 提交页面</a>
       </div>
 
       <div class="step">
@@ -151,8 +140,7 @@
         <div class="step-desc">
           提交后系统会自动：<br>
           &bull; 创建 Pull Request（合并请求）<br>
-          &bull; 关闭你的 Issue<br>
-          &bull; 维护者审核 merge 后网站自动更新（约 30 秒）<br>
+          &bull; 维护者审核 merge 后 Issue 自动关闭，网站自动更新（约 30 秒）<br>
           <br>
           <strong>编辑 Issue 会自动同步更新 PR</strong>，如果需要修改搭配信息，直接编辑你提交的 Issue 即可。
         </div>
@@ -164,67 +152,105 @@
 
   <script src="js/config.js"></script>
   <script>
-    function generateResult() {
-      const code = document.getElementById('code').value.trim();
-      const name = document.getElementById('name').value.trim();
-      if (!code || !name) { showToast('请至少填写搭配码和名称'); return; }
+    // 动态加载分类和标签选项
+    (async function loadOptions() {
+      try {
+        const resp = await fetch('data/outfits.json');
+        const data = await resp.json();
 
-      // 生成 ID，确保有效
-      const codeSlug = code.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
-      if (!codeSlug) {
-        showToast('搭配码中需要包含字母或数字，不能全是符号');
-        return;
+        // 填充分类下拉框
+        const catSelect = document.getElementById('category');
+        catSelect.innerHTML = '';
+        (data.categories || []).forEach(function(cat) {
+          const opt = document.createElement('option');
+          opt.value = cat.id;
+          opt.textContent = cat.name + (cat.nameEn ? ' / ' + cat.nameEn : '');
+          catSelect.appendChild(opt);
+        });
+
+        // 填充标签复选框
+        const tagContainer = document.getElementById('tagCheckboxes');
+        tagContainer.innerHTML = '';
+        (data.tags || []).forEach(function(tag) {
+          const label = document.createElement('label');
+          const input = document.createElement('input');
+          input.type = 'checkbox';
+          input.name = 'tag';
+          input.value = tag.id;
+          const span = document.createElement('span');
+          span.textContent = tag.name;
+          label.appendChild(input);
+          label.appendChild(span);
+          tagContainer.appendChild(label);
+        });
+      } catch (e) {
+        console.error('加载选项失败:', e);
       }
+    })();
 
-      const nameEn = document.getElementById('nameEn').value.trim();
-      const description = document.getElementById('description').value.trim();
-      const category = document.getElementById('category').value;
-      const author = document.getElementById('author').value.trim();
-      const imageName = document.getElementById('imageName').value.trim();
-      const tags = Array.from(document.querySelectorAll('input[name="tag"]:checked')).map(t => t.value);
+    function generateResult() {
+      var btn = document.querySelector('.submit-btn');
+      btn.disabled = true;
 
-      const id = 'outfit-' + codeSlug;
-      const today = new Date().toISOString().split('T')[0];
+      try {
+        var code = document.getElementById('code').value.trim();
+        var name = document.getElementById('name').value.trim();
+        if (!code || !name) { showToast('请至少填写搭配码和名称'); return; }
 
-      const outfit = {
-        id, code, name,
-        nameEn: nameEn || name,
-        description: description || '',
-        descriptionEn: '',
-        category,
-        tags: tags.length ? tags : ['new'],
-        images: imageName ? [imageName] : [],
-        thumbnail: imageName || '',
-        author: { name: author || '匿名', link: '' },
-        createdAt: today,
-        featured: false,
-        likes: 0
-      };
+        var codeSlug = code.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+        if (!codeSlug) {
+          showToast('搭配码中需要包含字母或数字，不能全是符号');
+          return;
+        }
 
-      const text = '```json\n' + JSON.stringify(outfit, null, 2) + '\n```';
-      document.getElementById('jsonPreview').textContent = text;
-      document.getElementById('issueNameHint').textContent = name;
-      document.getElementById('resultBox').classList.add('show');
+        var nameEn = document.getElementById('nameEn').value.trim();
+        var description = document.getElementById('description').value.trim();
+        var category = document.getElementById('category').value;
+        var author = document.getElementById('author').value.trim();
+        var imageName = document.getElementById('imageName').value.trim();
+        var tags = Array.from(document.querySelectorAll('input[name="tag"]:checked')).map(function(t) { return t.value; });
 
-      // 跳转链接：优先用 config（构建时注入），回退 localStorage
-      let { user, repo } = SITE_CONFIG.github;
-      if (!user || user === 'YOUR_USERNAME' || !repo || repo === 'YOUR_REPO') {
-        user = localStorage.getItem('nikki-gh-user') || '';
-        repo = localStorage.getItem('nikki-gh-repo') || '';
-        if (!user || !repo) {
+        var id = 'outfit-' + codeSlug;
+        var today = new Date().toISOString().split('T')[0];
+
+        var outfit = {
+          id: id, code: code, name: name,
+          nameEn: nameEn || name,
+          description: description || '',
+          descriptionEn: '',
+          category: category,
+          tags: tags.length ? tags : ['new'],
+          images: imageName ? [imageName] : [],
+          thumbnail: imageName || '',
+          author: { name: author || '匿名', link: '' },
+          createdAt: today,
+          featured: false,
+          likes: 0
+        };
+
+        var text = '```json\n' + JSON.stringify(outfit, null, 2) + '\n```';
+        document.getElementById('jsonPreview').textContent = text;
+        document.getElementById('issueNameHint').textContent = name;
+        document.getElementById('resultBox').classList.add('show');
+
+        var user = SITE_CONFIG.github.user;
+        var repo = SITE_CONFIG.github.repo;
+        if (!user || user === 'YOUR_USERNAME' || !repo || repo === 'YOUR_REPO') {
           alert('仓库信息未配置！\n\n请确认：\n1. Cloudflare Pages → Settings → Environment variables 中已设置 GITHUB_USER 和 GITHUB_REPO\n2. Cloudflare Pages → Settings → Build 中构建命令填写了 bash build.sh\n3. 以上配置后已重新部署（Deployments → Retry deployment）\n\n如仍有问题，查看 Deployments 页面的构建日志确认 build.sh 是否执行成功');
           return;
         }
-      }
-      document.getElementById('issueLink').href = 'https://github.com/' + user + '/' + repo + '/issues/new';
+        document.getElementById('issueLink').href = 'https://github.com/' + user + '/' + repo + '/issues/new';
 
-      document.getElementById('resultBox').scrollIntoView({ behavior: 'smooth' });
+        document.getElementById('resultBox').scrollIntoView({ behavior: 'smooth' });
+      } finally {
+        btn.disabled = false;
+      }
     }
 
     function copyJson() {
-      const text = document.getElementById('jsonPreview').textContent;
-      navigator.clipboard.writeText(text).then(() => showToast('已复制!')).catch(() => {
-        const ta = document.createElement('textarea');
+      var text = document.getElementById('jsonPreview').textContent;
+      navigator.clipboard.writeText(text).then(function() { showToast('已复制!'); }).catch(function() {
+        var ta = document.createElement('textarea');
         ta.value = text; ta.style.cssText = 'position:fixed;opacity:0';
         document.body.appendChild(ta); ta.select(); document.execCommand('copy');
         document.body.removeChild(ta); showToast('已复制!');
@@ -232,13 +258,13 @@
     }
 
     function showToast(msg) {
-      const t = document.getElementById('toast');
+      var t = document.getElementById('toast');
       t.textContent = msg; t.classList.add('show');
-      setTimeout(() => t.classList.remove('show'), 2000);
+      setTimeout(function() { t.classList.remove('show'); }, 2000);
     }
 
     (function() {
-      const dm = localStorage.getItem('nikki-dark-mode') === 'true' ||
+      var dm = localStorage.getItem('nikki-dark-mode') === 'true' ||
         (!localStorage.getItem('nikki-dark-mode') && window.matchMedia('(prefers-color-scheme: dark)').matches);
       document.documentElement.setAttribute('data-theme', dm ? 'dark' : 'light');
     })();
