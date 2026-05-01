@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="收集和分享无限暖暖游戏中的服装搭配码及演示图片">
+  <meta name="theme-color" content="#E8A0BF">
+  <title>无限暖暖搭配码 | Infinity Nikki Outfit Codes</title>
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/animations.css">
+  <link rel="stylesheet" href="css/themes.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/app.js"></script>
+</head>
+<body x-data="nikkiApp()" x-on:keydown="handleKeydown($event)">
+
+  <!-- ===== Header ===== -->
+  <header class="site-header">
+    <div class="container header-inner">
+      <div class="header-left">
+        <img src="assets/favicon.svg" alt="Logo" class="site-logo">
+        <span class="site-title" x-text="SITE_CONFIG.site.title"></span>
+      </div>
+      <div class="header-right">
+        <a href="submit.html" class="filter-pill" style="text-decoration:none;background:var(--color-primary);color:var(--text-inverse);border-color:var(--color-primary);">
+          + 提交搭配码
+        </a>
+        <span class="stats-badge">
+          <span>👗</span>
+          <span x-text="totalOutfits + ' 套搭配'"></span>
+        </span>
+        <button class="theme-toggle" @click="toggleTheme()" :title="darkMode ? '切换亮色模式' : '切换暗色模式'">
+          <span x-text="themeIcon"></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===== Hero Section ===== -->
+  <section class="hero">
+    <div class="sparkle-container">
+      <div class="sparkle"></div>
+      <div class="sparkle"></div>
+      <div class="sparkle"></div>
+      <div class="sparkle"></div>
+      <div class="sparkle"></div>
+      <div class="sparkle"></div>
+      <div class="sparkle"></div>
+      <div class="sparkle"></div>
+    </div>
+    <div class="container">
+      <h1 class="hero-title">无限暖暖搭配码</h1>
+      <p class="hero-subtitle">发现和分享最美的服装搭配，一键复制搭配码即可在游戏中使用</p>
+    </div>
+  </section>
+
+  <!-- ===== Search & Filters ===== -->
+  <section class="search-section">
+    <div class="container">
+      <!-- Search Bar -->
+      <div class="search-row">
+        <div class="search-bar">
+          <span class="search-icon">🔍</span>
+          <input
+            type="text"
+            x-model="searchQuery"
+            placeholder="搜索搭配名称、编码、作者..."
+            @input="onSearchInput()"
+          >
+        </div>
+        <template x-if="hasActiveFilters">
+          <button class="filter-pill" @click="clearFilters()">
+            ✕ 清除筛选
+          </button>
+        </template>
+      </div>
+
+      <!-- Category Filters -->
+      <div class="filter-row">
+        <button
+          class="filter-pill"
+          :class="{ 'active': !selectedCategory }"
+          @click="selectedCategory = ''"
+        >
+          全部
+        </button>
+        <template x-for="cat in categories" :key="cat.id">
+          <button
+            class="filter-pill"
+            :class="{ 'active': isActiveCategory(cat.id) }"
+            @click="setCategory(cat.id)"
+          >
+            <span class="pill-dot" :style="'background:' + cat.color"></span>
+            <span x-text="cat.name"></span>
+          </button>
+        </template>
+      </div>
+
+      <!-- Tag Filters -->
+      <div class="filter-row">
+        <template x-for="tag in tags" :key="tag.id">
+          <button
+            class="filter-pill"
+            :class="{ 'active': isActiveTag(tag.id) }"
+            @click="toggleTag(tag.id)"
+          >
+            # <span x-text="tag.name"></span>
+          </button>
+        </template>
+      </div>
+
+      <!-- Result Count -->
+      <div class="stats-badge" style="margin-top: 8px;" x-show="hasActiveFilters">
+        <span>找到 <strong x-text="resultCount"></strong> 套搭配</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Outfit Grid ===== -->
+  <main class="container">
+    <!-- Loading State -->
+    <template x-if="loading">
+      <div class="outfit-grid">
+        <template x-for="i in 4" :key="i">
+          <div class="outfit-card">
+            <div class="card-image skeleton" style="aspect-ratio: 4/5;"></div>
+            <div class="card-body">
+              <div class="skeleton" style="height: 16px; width: 60%; margin-bottom: 8px;"></div>
+              <div class="skeleton" style="height: 20px; width: 80%; margin-bottom: 12px;"></div>
+              <div class="skeleton" style="height: 36px; width: 100%;"></div>
+            </div>
+          </div>
+        </template>
+      </div>
+    </template>
+
+    <!-- Error State -->
+    <template x-if="error">
+      <div class="empty-state">
+        <div class="empty-state-icon">⚠️</div>
+        <p x-text="error"></p>
+      </div>
+    </template>
+
+    <!-- Outfit Cards -->
+    <template x-if="!loading && !error">
+      <div class="outfit-grid">
+        <template x-for="(outfit, index) in filteredOutfits" :key="outfit.id">
+          <div
+            class="outfit-card fade-in-up"
+            :style="'animation-delay:' + (index * 0.05) + 's'"
+            @click="openModal(outfit)"
+          >
+            <!-- Category Color Accent -->
+            <div class="card-accent" :style="'background:' + getCategoryById(outfit.category).color"></div>
+
+            <!-- Image -->
+            <div class="card-image">
+              <template x-if="outfit.thumbnailUrl">
+                <img
+                  :src="outfit.thumbnailUrl"
+                  :alt="outfit.name"
+                  loading="lazy"
+                  @load="$el.style.display='block'; $el.parentElement.querySelector('.placeholder-icon').style.display='none'"
+                  @error="$el.style.display='none'; $el.parentElement.querySelector('.placeholder-icon').style.display='flex'"
+                >
+              </template>
+              <div class="placeholder-icon" style="display: flex;">👗</div>
+            </div>
+
+            <!-- Body -->
+            <div class="card-body">
+              <div
+                class="card-category"
+                :style="'background:' + getCategoryById(outfit.category).color + '22; color:' + getCategoryById(outfit.category).color"
+              >
+                <span class="pill-dot" :style="'background:' + getCategoryById(outfit.category).color"></span>
+                <span x-text="getCategoryById(outfit.category).name"></span>
+              </div>
+              <div class="card-name" x-text="outfit.name"></div>
+              <div class="card-name-en" x-text="outfit.nameEn"></div>
+              <div class="card-code" @click.stop="copyCode(outfit.code, $event)">
+                <code x-text="outfit.code"></code>
+                <button class="copy-btn">复制</button>
+              </div>
+              <div class="card-meta">
+                <span x-text="'by ' + outfit.author.name"></span>
+                <span class="likes">❤️ <span x-text="outfit.likes"></span></span>
+              </div>
+            </div>
+          </div>
+        </template>
+
+        <!-- Empty State -->
+        <template x-if="filteredOutfits.length === 0">
+          <div class="empty-state">
+            <div class="empty-state-icon">🔍</div>
+            <p>没有找到匹配的搭配码</p>
+            <button class="filter-pill" style="margin-top: 16px;" @click="clearFilters()">清除所有筛选</button>
+          </div>
+        </template>
+      </div>
+    </template>
+  </main>
+
+  <!-- ===== Detail Modal ===== -->
+  <template x-if="modalOpen && modalOutfit">
+    <div class="modal-overlay" @click.self="closeModal()">
+      <div class="modal-content">
+        <button class="modal-close" @click="closeModal()">✕</button>
+
+        <!-- Image Gallery -->
+        <div style="position: relative;">
+          <img
+            class="modal-image"
+            :src="currentModalImage"
+            :alt="modalOutfit.name"
+            @error="$el.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 400 500%22%3E%3Crect fill=%22%23FFF5F9%22 width=%22400%22 height=%22500%22/%3E%3Ctext x=%22200%22 y=%22250%22 text-anchor=%22middle%22 font-size=%2248%22 fill=%22%23E8A0BF%22%3E👗%3C/text%3E%3C/svg%3E'"
+          >
+          <template x-if="hasMultipleImages">
+            <div>
+              <button class="modal-image-nav prev" @click="prevImage()">◀</button>
+              <button class="modal-image-nav next" @click="nextImage()">▶</button>
+            </div>
+          </template>
+        </div>
+
+        <!-- Modal Body -->
+        <div class="modal-body">
+          <div
+            class="modal-category"
+            :style="'background:' + getCategoryById(modalOutfit.category).color + '22; color:' + getCategoryById(modalOutfit.category).color"
+          >
+            <span class="pill-dot" :style="'background:' + getCategoryById(modalOutfit.category).color"></span>
+            <span x-text="getCategoryById(modalOutfit.category).name"></span>
+          </div>
+
+          <h2 class="modal-title" x-text="modalOutfit.name"></h2>
+          <p class="modal-title-en" x-text="modalOutfit.nameEn"></p>
+
+          <!-- Code Block -->
+          <div class="modal-code-block">
+            <code x-text="modalOutfit.code"></code>
+            <button class="modal-copy-btn" @click="copyCode(modalOutfit.code, $event)">
+              📋 复制搭配码
+            </button>
+          </div>
+
+          <!-- Description -->
+          <div class="modal-description">
+            <p x-text="modalOutfit.description"></p>
+            <p style="margin-top: 8px; font-size: 0.9rem; color: var(--text-muted);" x-text="modalOutfit.descriptionEn"></p>
+          </div>
+
+          <!-- Tags -->
+          <div class="modal-tags">
+            <template x-for="tagId in modalOutfit.tags" :key="tagId">
+              <span class="modal-tag" x-text="'#' + getTagById(tagId).name"></span>
+            </template>
+          </div>
+
+          <!-- Meta -->
+          <div class="modal-meta-row">
+            <span>作者: <strong x-text="modalOutfit.author.name"></strong></span>
+            <span>
+              <span x-text="formatDate(modalOutfit.createdAt)"></span>
+              · ❤️ <span x-text="modalOutfit.likes"></span>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <!-- ===== Toast Notification ===== -->
+  <div class="toast" :class="{ 'show': toastVisible }">
+    <span x-text="toastMessage"></span>
+  </div>
+
+  <!-- ===== Footer ===== -->
+  <footer class="site-footer">
+    <div class="container">
+      <p>无限暖暖搭配码收集站 · 数据通过 GitHub 仓库管理</p>
+      <p style="margin-top: 4px; font-size: 0.8rem;">
+        本站为玩家社区项目，与游戏官方无关
+      </p>
+    </div>
+  </footer>
+
+</body>
+</html>

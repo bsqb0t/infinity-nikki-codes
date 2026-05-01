@@ -1,0 +1,153 @@
+/* === CSS Reset & Base === */
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+    "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue", Helvetica, Arial,
+    sans-serif;
+  line-height: 1.6;
+  color: var(--text-primary);
+  background: var(--bg-gradient);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: "Noto Serif SC", "Songti SC", "SimSun", serif;
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--text-heading);
+}
+
+a {
+  color: var(--color-primary);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+a:hover {
+  color: var(--color-primary-dark);
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  background: none;
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+}
+
+input {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+}
+
+code, .mono {
+  font-family: "SF Mono", "Fira Code", "Fira Mono", "Roboto Mono",
+    "Courier New", monospace;
+}
+
+/* === Custom Properties (CSS Variables) === */
+:root {
+  /* Primary palette */
+  --color-primary: #C77DA0;
+  --color-primary-light: #E8A0BF;
+  --color-primary-dark: #A05E80;
+  --color-primary-bg: #FFF5F9;
+
+  /* Accent */
+  --color-accent: #FFD700;
+  --color-accent-light: #FFED80;
+
+  /* Background */
+  --bg-body: #FFF8FB;
+  --bg-gradient: linear-gradient(135deg, #FFF5F9 0%, #FEF0F5 50%, #FFF0F8 100%);
+  --bg-card: #FFFFFF;
+  --bg-card-hover: #FFFAFD;
+  --bg-surface: #FFFFFF;
+  --bg-overlay: rgba(0, 0, 0, 0.5);
+
+  /* Text */
+  --text-primary: #3D2B35;
+  --text-secondary: #7A6572;
+  --text-muted: #A8949E;
+  --text-heading: #2D1F27;
+  --text-inverse: #FFFFFF;
+
+  /* Borders */
+  --border-light: rgba(200, 125, 160, 0.15);
+  --border-medium: rgba(200, 125, 160, 0.25);
+
+  /* Shadows */
+  --shadow-sm: 0 1px 3px rgba(200, 125, 160, 0.08);
+  --shadow-md: 0 4px 12px rgba(200, 125, 160, 0.12);
+  --shadow-lg: 0 8px 30px rgba(200, 125, 160, 0.18);
+  --shadow-xl: 0 16px 50px rgba(200, 125, 160, 0.25);
+
+  /* Radius */
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --radius-full: 9999px;
+
+  /* Transitions */
+  --transition-fast: 0.15s ease;
+  --transition-normal: 0.25s ease;
+  --transition-slow: 0.4s ease;
+
+  /* Spacing */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+  --space-3xl: 64px;
+}
+
+/* === Scrollbar === */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-primary-light);
+  border-radius: var(--radius-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-primary);
+}
+
+/* === Selection === */
+::selection {
+  background: var(--color-primary-light);
+  color: var(--text-inverse);
+}

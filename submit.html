@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>提交搭配码 - 无限暖暖搭配码</title>
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/animations.css">
+  <link rel="stylesheet" href="css/themes.css">
+  <style>
+    .submit-page { max-width: 680px; margin: 0 auto; padding: var(--space-xl) var(--space-lg); }
+    .submit-page h1 { text-align: center; margin-bottom: var(--space-sm); }
+    .submit-page .subtitle { text-align: center; color: var(--text-secondary); margin-bottom: var(--space-2xl); }
+    .form-group { margin-bottom: var(--space-lg); }
+    .form-group label { display: block; font-weight: 600; margin-bottom: var(--space-sm); color: var(--text-heading); }
+    .form-group label .hint { font-weight: 400; font-size: 0.85rem; color: var(--text-muted); }
+    .form-group input[type="text"], .form-group textarea, .form-group select {
+      width: 100%; padding: 12px 16px; border: 2px solid var(--border-light);
+      border-radius: var(--radius-md); background: var(--bg-surface); font-size: 1rem;
+      transition: border-color var(--transition-fast); outline: none;
+    }
+    .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+      border-color: var(--color-primary-light);
+    }
+    .form-group textarea { resize: vertical; min-height: 80px; }
+    .tag-checkboxes { display: flex; flex-wrap: wrap; gap: var(--space-sm); }
+    .tag-checkboxes label { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border: 2px solid var(--border-light); border-radius: var(--radius-full); cursor: pointer; font-weight: 500; font-size: 0.9rem; transition: all var(--transition-fast); }
+    .tag-checkboxes input:checked + span { color: var(--color-primary-dark); }
+    .tag-checkboxes label:has(input:checked) { border-color: var(--color-primary); background: var(--color-primary-bg); }
+    .tag-checkboxes input { display: none; }
+
+    /* 图片上传区域 */
+    .image-upload-area {
+      border: 2px dashed var(--border-medium);
+      border-radius: var(--radius-md);
+      padding: var(--space-xl);
+      text-align: center;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      background: var(--bg-surface);
+      position: relative;
+    }
+    .image-upload-area:hover { border-color: var(--color-primary-light); background: var(--color-primary-bg); }
+    .image-upload-area.has-image { padding: var(--space-md); }
+    .image-upload-area input[type="file"] {
+      position: absolute; inset: 0; opacity: 0; cursor: pointer;
+    }
+    .upload-placeholder { color: var(--text-muted); }
+    .upload-placeholder .icon { font-size: 2.5rem; margin-bottom: var(--space-sm); }
+    .upload-placeholder p { font-size: 0.9rem; }
+    .image-preview-wrap {
+      display: flex; align-items: center; gap: var(--space-md);
+    }
+    .image-preview-wrap img {
+      width: 120px; height: 150px; object-fit: cover; border-radius: var(--radius-sm);
+      border: 1px solid var(--border-light);
+    }
+    .image-preview-info { text-align: left; flex: 1; }
+    .image-preview-info .filename { font-weight: 600; color: var(--text-heading); margin-bottom: 4px; }
+    .image-preview-info .filesize { font-size: 0.85rem; color: var(--text-muted); margin-bottom: var(--space-sm); }
+    .image-preview-info .remove-btn {
+      padding: 4px 14px; border-radius: var(--radius-full); font-size: 0.8rem;
+      border: 1px solid var(--border-medium); color: var(--text-secondary);
+      transition: all var(--transition-fast);
+    }
+    .image-preview-info .remove-btn:hover { border-color: #e74c3c; color: #e74c3c; }
+    .image-status { font-size: 0.85rem; margin-top: var(--space-sm); }
+    .image-status.compressing { color: var(--color-primary); }
+    .image-status.ready { color: #27ae60; }
+    .image-status.error { color: #e74c3c; }
+
+    .submit-btn { width: 100%; padding: 14px; background: var(--color-primary); color: var(--text-inverse); border-radius: var(--radius-full); font-size: 1.1rem; font-weight: 700; transition: all var(--transition-fast); }
+    .submit-btn:hover { background: var(--color-primary-dark); transform: scale(1.01); }
+    .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+    .result-box { background: var(--bg-card); border: 2px solid var(--border-light); border-radius: var(--radius-md); padding: var(--space-lg); margin-top: var(--space-xl); display: none; }
+    .result-box.show { display: block; animation: slideUp 0.3s ease; }
+    .result-box h3 { margin-bottom: var(--space-md); }
+    .result-steps { counter-reset: step; }
+    .result-steps li { counter-increment: step; padding: var(--space-md) 0; border-bottom: 1px solid var(--border-light); list-style: none; }
+    .result-steps li:last-child { border-bottom: none; }
+    .result-steps li::before { content: counter(step); display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; background: var(--color-primary); color: var(--text-inverse); border-radius: 50%; font-size: 0.85rem; font-weight: 700; margin-right: var(--space-sm); }
+    .json-preview { background: var(--color-primary-bg); border-radius: var(--radius-sm); padding: var(--space-md); font-family: "SF Mono", "Fira Code", monospace; font-size: 0.85rem; overflow-x: auto; white-space: pre-wrap; word-break: break-all; max-height: 200px; overflow-y: auto; margin: var(--space-md) 0; }
+    .copy-json-btn { padding: 10px 24px; background: var(--color-primary); color: var(--text-inverse); border-radius: var(--radius-full); font-weight: 600; transition: all var(--transition-fast); }
+    .copy-json-btn:hover { background: var(--color-primary-dark); }
+    .issue-btn { display: inline-block; padding: 12px 28px; background: #238636; color: #fff; border-radius: var(--radius-full); font-weight: 600; text-decoration: none; transition: all var(--transition-fast); margin-top: var(--space-md); }
+    .issue-btn:hover { background: #2ea043; color: #fff; transform: scale(1.02); }
+    .toast { position: fixed; bottom: var(--space-xl); left: 50%; transform: translateX(-50%) translateY(100px); padding: 12px 28px; background: var(--text-heading); color: var(--text-inverse); border-radius: var(--radius-full); font-size: 0.9rem; box-shadow: var(--shadow-lg); z-index: 300; opacity: 0; transition: all var(--transition-normal); pointer-events: none; }
+    .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+    .back-link { display: inline-flex; align-items: center; gap: 6px; color: var(--text-secondary); margin-bottom: var(--space-xl); font-size: 0.95rem; }
+    .back-link:hover { color: var(--color-primary); }
+    .size-warn { background: #fff3cd; border: 1px solid #ffc107; border-radius: var(--radius-sm); padding: 8px 12px; font-size: 0.85rem; color: #856404; margin-top: var(--space-sm); display: none; }
+  </style>
+</head>
+<body>
+  <div class="submit-page">
+    <a href="index.html" class="back-link">← 返回首页</a>
+    <h1>提交搭配码</h1>
+    <p class="subtitle">填写信息并上传图片，系统会自动处理，一键提交到 GitHub</p>
+
+    <form id="submitForm" onsubmit="return false;">
+      <div class="form-group">
+        <label>搭配码 <span class="hint">（游戏内的分享码）</span></label>
+        <input type="text" id="code" placeholder="例如：NIKKI-2026-SPRING-01" required>
+      </div>
+
+      <div class="form-group">
+        <label>搭配名称</label>
+        <input type="text" id="name" placeholder="例如：春日花语" required>
+      </div>
+
+      <div class="form-group">
+        <label>英文名称 <span class="hint">（选填）</span></label>
+        <input type="text" id="nameEn" placeholder="例如：Spring Blossom">
+      </div>
+
+      <div class="form-group">
+        <label>搭配描述 <span class="hint">（选填，简单介绍搭配风格）</span></label>
+        <textarea id="description" placeholder="例如：以樱花为主题的春日搭配"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label>分类</label>
+        <select id="category">
+          <option value="cute">可爱</option>
+          <option value="elegant">优雅</option>
+          <option value="cool">酷帅</option>
+          <option value="fantasy">奇幻</option>
+          <option value="casual">休闲</option>
+          <option value="formal">正装</option>
+          <option value="seasonal">季节</option>
+          <option value="themed">主题</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>标签 <span class="hint">（可多选）</span></label>
+        <div class="tag-checkboxes">
+          <label><input type="checkbox" name="tag" value="popular"><span>热门</span></label>
+          <label><input type="checkbox" name="tag" value="new"><span>新品</span></label>
+          <label><input type="checkbox" name="tag" value="beginner"><span>新手友好</span></label>
+          <label><input type="checkbox" name="tag" value="rare"><span>稀有</span></label>
+          <label><input type="checkbox" name="tag" value="free"><span>免费</span></label>
+          <label><input type="checkbox" name="tag" value="puzzle"><span>解谜</span></label>
+          <label><input type="checkbox" name="tag" value="combat"><span>战斗</span></label>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>你的昵称 <span class="hint">（选填，会显示为作者）</span></label>
+        <input type="text" id="author" placeholder="例如：花间小暖">
+      </div>
+
+      <div class="form-group">
+        <label>搭配图片</label>
+        <div class="image-upload-area" id="uploadArea">
+          <input type="file" id="imageInput" accept="image/*">
+          <div class="upload-placeholder" id="uploadPlaceholder">
+            <div class="icon">📷</div>
+            <p>点击或拖拽上传图片</p>
+            <p style="font-size:0.8rem;color:var(--text-muted);margin-top:4px;">支持 JPG / PNG / WebP，会自动压缩</p>
+          </div>
+          <div class="image-preview-wrap" id="imagePreviewWrap" style="display:none;">
+            <img id="imagePreviewImg" src="" alt="预览">
+            <div class="image-preview-info">
+              <div class="filename" id="imageFileName"></div>
+              <div class="filesize" id="imageFileSize"></div>
+              <button type="button" class="remove-btn" onclick="removeImage()">移除图片</button>
+            </div>
+          </div>
+        </div>
+        <div class="image-status" id="imageStatus"></div>
+        <div class="size-warn" id="sizeWarn">图片压缩后仍然较大，GitHub Issue 可能无法提交。建议使用更小的图片（宽度不超过 800px）。</div>
+      </div>
+
+      <button type="submit" class="submit-btn" id="submitBtn" onclick="generateResult()">生成数据并提交</button>
+    </form>
+
+    <div id="resultBox" class="result-box">
+      <h3>数据已生成，按以下步骤操作：</h3>
+      <ol class="result-steps">
+        <li id="stepCopy" style="display:none;">
+          <strong>复制下面的数据</strong>
+          <div class="json-preview" id="jsonPreview"></div>
+          <button class="copy-json-btn" onclick="copyJson()">复制</button>
+        </li>
+        <li>
+          <strong>前往 GitHub 提交</strong>
+          <p style="margin-top:8px;color:var(--text-secondary);">点击下方按钮会打开 GitHub Issue 页面，数据已自动填好，直接点「Submit new issue」即可</p>
+          <a id="issueLink" class="issue-btn" href="#" target="_blank">在 GitHub 提交搭配码</a>
+        </li>
+        <li>
+          <strong>等待审核合并</strong>
+          <p style="margin-top:8px;color:var(--text-secondary);">维护者审核通过后会合并到主分支，网站将自动更新</p>
+        </li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="js/config.js"></script>
+  <script>
+    // === 图片处理 ===
+    let imageDataBase64 = '';
+    let imageFileName = '';
+    let imageCompressedSize = 0;
+
+    const imageInput = document.getElementById('imageInput');
+    const uploadArea = document.getElementById('uploadArea');
+
+    imageInput.addEventListener('change', handleImageSelect);
+
+    // 拖拽支持
+    uploadArea.addEventListener('dragover', e => { e.preventDefault(); uploadArea.style.borderColor = 'var(--color-primary)'; });
+    uploadArea.addEventListener('dragleave', () => { uploadArea.style.borderColor = ''; });
+    uploadArea.addEventListener('drop', e => {
+      e.preventDefault();
+      uploadArea.style.borderColor = '';
+      if (e.dataTransfer.files.length) {
+        imageInput.files = e.dataTransfer.files;
+        handleImageSelect({ target: imageInput });
+      }
+    });
+
+    function handleImageSelect(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      if (!file.type.startsWith('image/')) {
+        showToast('请选择图片文件');
+        return;
+      }
+
+      const statusEl = document.getElementById('imageStatus');
+      statusEl.className = 'image-status compressing';
+      statusEl.textContent = '正在压缩图片...';
+
+      compressImage(file).then(result => {
+        imageDataBase64 = result.base64;
+        imageFileName = result.filename;
+        imageCompressedSize = result.size;
+
+        // 显示预览
+        document.getElementById('imagePreviewImg').src = result.dataUrl;
+        document.getElementById('imageFileName').textContent = result.filename;
+        document.getElementById('imageFileSize').textContent = formatSize(result.size);
+        document.getElementById('uploadPlaceholder').style.display = 'none';
+        document.getElementById('imagePreviewWrap').style.display = 'flex';
+        uploadArea.classList.add('has-image');
+
+        statusEl.className = 'image-status ready';
+        statusEl.textContent = '图片已就绪';
+
+        // 大小警告
+        document.getElementById('sizeWarn').style.display = result.size > 150000 ? 'block' : 'none';
+      }).catch(err => {
+        statusEl.className = 'image-status error';
+        statusEl.textContent = '压缩失败: ' + err.message;
+      });
+    }
+
+    function removeImage() {
+      imageDataBase64 = '';
+      imageFileName = '';
+      imageInput.value = '';
+      document.getElementById('uploadPlaceholder').style.display = '';
+      document.getElementById('imagePreviewWrap').style.display = 'none';
+      uploadArea.classList.remove('has-image');
+      document.getElementById('imageStatus').textContent = '';
+      document.getElementById('sizeWarn').style.display = 'none';
+    }
+
+    function compressImage(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const img = new Image();
+          img.onload = function() {
+            const canvas = document.createElement('canvas');
+            const maxW = 600;
+            const maxH = 750;
+            let w = img.width, h = img.height;
+
+            if (w > maxW || h > maxH) {
+              const ratio = Math.min(maxW / w, maxH / h);
+              w = Math.round(w * ratio);
+              h = Math.round(h * ratio);
+            }
+
+            canvas.width = w;
+            canvas.height = h;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, w, h);
+
+            // 优先 WebP，回退 JPEG
+            let dataUrl, ext;
+            const webpData = canvas.toDataURL('image/webp', 0.75);
+            if (webpData.length > 10) {
+              dataUrl = webpData;
+              ext = 'webp';
+            } else {
+              dataUrl = canvas.toDataURL('image/jpeg', 0.75);
+              ext = 'jpg';
+            }
+
+            const base64 = dataUrl.split(',')[1];
+            const id = generateId();
+            const filename = id + '-front.' + ext;
+
+            resolve({
+              base64: base64,
+              dataUrl: dataUrl,
+              filename: filename,
+              size: Math.round(base64.length * 3 / 4)
+            });
+          };
+          img.onerror = () => reject(new Error('无法读取图片'));
+          img.src = e.target.result;
+        };
+        reader.onerror = () => reject(new Error('无法读取文件'));
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function generateId() {
+      const code = document.getElementById('code').value.trim();
+      return 'outfit-' + code.replace(/[^a-zA-Z0-9]/g, '').slice(-6).toLowerCase();
+    }
+
+    function formatSize(bytes) {
+      if (bytes < 1024) return bytes + ' B';
+      if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+      return (bytes / 1024 / 1024).toFixed(1) + ' MB';
+    }
+
+    // === 生成结果 ===
+    function generateResult() {
+      const code = document.getElementById('code').value.trim();
+      const name = document.getElementById('name').value.trim();
+      if (!code || !name) { showToast('请至少填写搭配码和名称'); return; }
+
+      const nameEn = document.getElementById('nameEn').value.trim();
+      const description = document.getElementById('description').value.trim();
+      const category = document.getElementById('category').value;
+      const author = document.getElementById('author').value.trim();
+      const tags = Array.from(document.querySelectorAll('input[name="tag"]:checked')).map(t => t.value);
+
+      const id = generateId();
+      const today = new Date().toISOString().split('T')[0];
+
+      const outfit = {
+        id: id,
+        code: code,
+        name: name,
+        nameEn: nameEn || name,
+        description: description || '',
+        descriptionEn: '',
+        category: category,
+        tags: tags.length ? tags : ['new'],
+        images: imageFileName ? [imageFileName] : [],
+        thumbnail: imageFileName || '',
+        author: { name: author || '匿名', link: '' },
+        createdAt: today,
+        featured: false,
+        likes: 0
+      };
+
+      const json = JSON.stringify(outfit, null, 2);
+
+      // 构建 Issue body
+      let body = '## 新搭配码提交\n\n';
+      body += '请将以下 JSON 数据添加到 `data/outfits.json` 的 `outfits` 数组中：\n\n';
+      body += '```json\n' + json + '\n```\n\n';
+
+      if (imageDataBase64) {
+        body += '## IMAGE_DATA\n';
+        body += '文件名: ' + imageFileName + '\n';
+        body += '```\n' + imageDataBase64 + '\n```\n\n';
+      }
+
+      body += '---\n*由提交页面自动生成*';
+
+      // 显示结果
+      if (imageDataBase64) {
+        // 有图片时只显示 Issue 链接（数据太长不适合复制）
+        document.getElementById('stepCopy').style.display = 'none';
+      } else {
+        // 无图片时显示 JSON 预览和复制按钮
+        document.getElementById('jsonPreview').textContent = json;
+        document.getElementById('stepCopy').style.display = '';
+      }
+
+      document.getElementById('resultBox').classList.add('show');
+
+      const { user, repo } = SITE_CONFIG.github;
+      const title = encodeURIComponent('[搭配码] ' + name);
+      // GitHub Issue body URL 长度限制 ~8000 字符，超过则只放 JSON 不放图片
+      const fullUrl = 'https://github.com/' + user + '/' + repo + '/issues/new?title=' + title + '&body=' + encodeURIComponent(body);
+
+      if (fullUrl.length > 8000 && imageDataBase64) {
+        // URL 太长，去掉图片数据，提示用户手动上传
+        const bodyNoImage = '## 新搭配码提交\n\n' +
+          '请将以下 JSON 数据添加到 `data/outfits.json` 的 `outfits` 数组中：\n\n' +
+          '```json\n' + json + '\n```\n\n' +
+          '**图片文件名：** ' + imageFileName + '（请手动上传到 images/ 目录）\n\n' +
+          '---\n*由提交页面自动生成*';
+        document.getElementById('issueLink').href =
+          'https://github.com/' + user + '/' + repo + '/issues/new?title=' + title + '&body=' + encodeURIComponent(bodyNoImage);
+        document.getElementById('stepCopy').style.display = '';
+        document.getElementById('jsonPreview').textContent = json +
+          '\n\n// 图片 base64 数据（请单独上传图片文件）';
+        showToast('图片较大，需手动上传图片文件');
+      } else {
+        document.getElementById('issueLink').href = fullUrl;
+      }
+
+      document.getElementById('resultBox').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // === 复制 ===
+    function copyJson() {
+      const text = document.getElementById('jsonPreview').textContent;
+      navigator.clipboard.writeText(text).then(() => showToast('已复制!')).catch(() => {
+        const ta = document.createElement('textarea');
+        ta.value = text; ta.style.cssText = 'position:fixed;opacity:0';
+        document.body.appendChild(ta); ta.select(); document.execCommand('copy');
+        document.body.removeChild(ta); showToast('已复制!');
+      });
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg; t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 2000);
+    }
+
+    // 主题跟随首页
+    (function() {
+      const dm = localStorage.getItem('nikki-dark-mode') === 'true' ||
+        (!localStorage.getItem('nikki-dark-mode') && window.matchMedia('(prefers-color-scheme: dark)').matches);
+      document.documentElement.setAttribute('data-theme', dm ? 'dark' : 'light');
+    })();
+  </script>
+</body>
+</html>
