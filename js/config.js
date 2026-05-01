@@ -1,12 +1,11 @@
 /**
  * 站点部署配置
- * 部署时通过 Cloudflare Pages 环境变量自动填充，无需手动修改此文件
- * 环境变量：GITHUB_USER（用户名）、GITHUB_REPO（仓库名）
+ * 修改 user 和 repo 为你的 GitHub 用户名和仓库名
  */
 const SITE_CONFIG = {
   github: {
-    user: '__GITHUB_USER__',
-    repo: '__GITHUB_REPO__',
+    user: 'bsqb0t',
+    repo: 'infinity-nikki-codes',
     branch: 'main'
   },
   site: {
