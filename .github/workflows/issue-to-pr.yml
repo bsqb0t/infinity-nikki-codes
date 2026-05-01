@@ -36,6 +36,27 @@ jobs:
               core.setFailed('JSON 缺少必要字段（id / code / name）');
               return;
             }
+
+            // 从 Issue 正文中提取附件图片 URL（GitHub 上传的图片）
+            const imgUrls = [];
+            // 匹配 ![...](url) 格式
+            const mdImgs = body.matchAll(/!\[.*?\]\((https:\/\/github\.com\/user-attachments\/assets\/[^\s)]+)\)/g);
+            for (const m of mdImgs) imgUrls.push(m[1]);
+            // 匹配 <img src="url"> 格式
+            const htmlImgs = body.matchAll(/<img[^>]+src="(https:\/\/github\.com\/user-attachments\/assets\/[^"]+)"/g);
+            for (const m of htmlImgs) imgUrls.push(m[1]);
+
+            // 合并到 images 数组（去重）
+            if (imgUrls.length > 0) {
+              const existing = new Set(data.images || []);
+              imgUrls.forEach(u => existing.add(u));
+              data.images = [...existing];
+              if (!data.thumbnail && imgUrls.length > 0) {
+                data.thumbnail = imgUrls[0];
+              }
+              core.info('提取到 ' + imgUrls.length + ' 张附件图片');
+            }
+
             core.setOutput('json', JSON.stringify(data));
             core.setOutput('id', data.id);
             core.setOutput('name', data.name);
