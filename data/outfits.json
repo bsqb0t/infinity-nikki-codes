@@ -1,24 +1,116 @@
 {
   "version": 1,
-  "lastUpdated": "2026-05-01T00:00:00Z",
+  "lastUpdated": "2026-05-01T16:52:47.816Z",
   "categories": [
-    { "id": "casual", "name": "休闲", "nameEn": "Casual", "color": "#A8D8EA" },
-    { "id": "formal", "name": "正装", "nameEn": "Formal", "color": "#F5E6CC" },
-    { "id": "fantasy", "name": "奇幻", "nameEn": "Fantasy", "color": "#C3B1E1" },
-    { "id": "cute", "name": "可爱", "nameEn": "Cute", "color": "#FFB7C5" },
-    { "id": "cool", "name": "酷帅", "nameEn": "Cool", "color": "#B5C7D3" },
-    { "id": "elegant", "name": "优雅", "nameEn": "Elegant", "color": "#E8C8A0" },
-    { "id": "seasonal", "name": "季节", "nameEn": "Seasonal", "color": "#B5E8B5" },
-    { "id": "themed", "name": "主题", "nameEn": "Themed", "color": "#F0C4E0" }
+    {
+      "id": "casual",
+      "name": "休闲",
+      "nameEn": "Casual",
+      "color": "#A8D8EA"
+    },
+    {
+      "id": "formal",
+      "name": "正装",
+      "nameEn": "Formal",
+      "color": "#F5E6CC"
+    },
+    {
+      "id": "fantasy",
+      "name": "奇幻",
+      "nameEn": "Fantasy",
+      "color": "#C3B1E1"
+    },
+    {
+      "id": "cute",
+      "name": "可爱",
+      "nameEn": "Cute",
+      "color": "#FFB7C5"
+    },
+    {
+      "id": "cool",
+      "name": "酷帅",
+      "nameEn": "Cool",
+      "color": "#B5C7D3"
+    },
+    {
+      "id": "elegant",
+      "name": "优雅",
+      "nameEn": "Elegant",
+      "color": "#E8C8A0"
+    },
+    {
+      "id": "seasonal",
+      "name": "季节",
+      "nameEn": "Seasonal",
+      "color": "#B5E8B5"
+    },
+    {
+      "id": "themed",
+      "name": "主题",
+      "nameEn": "Themed",
+      "color": "#F0C4E0"
+    }
   ],
   "tags": [
-    { "id": "popular", "name": "热门", "nameEn": "Popular" },
-    { "id": "new", "name": "新品", "nameEn": "New" },
-    { "id": "beginner", "name": "新手友好", "nameEn": "Beginner" },
-    { "id": "rare", "name": "稀有", "nameEn": "Rare" },
-    { "id": "free", "name": "免费", "nameEn": "Free" },
-    { "id": "puzzle", "name": "解谜", "nameEn": "Puzzle" },
-    { "id": "combat", "name": "战斗", "nameEn": "Combat" }
+    {
+      "id": "popular",
+      "name": "热门",
+      "nameEn": "Popular"
+    },
+    {
+      "id": "new",
+      "name": "新品",
+      "nameEn": "New"
+    },
+    {
+      "id": "beginner",
+      "name": "新手友好",
+      "nameEn": "Beginner"
+    },
+    {
+      "id": "rare",
+      "name": "稀有",
+      "nameEn": "Rare"
+    },
+    {
+      "id": "free",
+      "name": "免费",
+      "nameEn": "Free"
+    },
+    {
+      "id": "puzzle",
+      "name": "解谜",
+      "nameEn": "Puzzle"
+    },
+    {
+      "id": "combat",
+      "name": "战斗",
+      "nameEn": "Combat"
+    }
   ],
-  "outfits": []
+  "outfits": [
+    {
+      "id": "outfit-",
+      "code": "测试码！@#￥%%……*（）——《？？",
+      "name": "测试名称",
+      "nameEn": "测试英文",
+      "description": "测试描述",
+      "descriptionEn": "",
+      "category": "cool",
+      "tags": [
+        "popular",
+        "beginner",
+        "rare"
+      ],
+      "images": [],
+      "thumbnail": "",
+      "author": {
+        "name": "我是是",
+        "link": ""
+      },
+      "createdAt": "2026-05-01",
+      "featured": false,
+      "likes": 0
+    }
+  ]
 }
