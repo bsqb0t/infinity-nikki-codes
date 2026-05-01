@@ -218,12 +218,17 @@
 
         <!-- Image Gallery -->
         <div style="position: relative;">
-          <img
-            class="modal-image"
-            :src="currentModalImage"
-            :alt="modalOutfit.name"
-            @error="$el.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 400 500%22%3E%3Crect fill=%22%23FFF5F9%22 width=%22400%22 height=%22500%22/%3E%3Ctext x=%22200%22 y=%22250%22 text-anchor=%22middle%22 font-size=%2248%22 fill=%22%23E8A0BF%22%3E👗%3C/text%3E%3C/svg%3E'"
-          >
+          <template x-if="currentModalImage">
+            <img
+              class="modal-image"
+              :src="currentModalImage"
+              :alt="modalOutfit.name"
+              @error="$el.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 400 500%22%3E%3Crect fill=%22%23FFF5F9%22 width=%22400%22 height=%22500%22/%3E%3Ctext x=%22200%22 y=%22250%22 text-anchor=%22middle%22 font-size=%2248%22 fill=%22%23E8A0BF%22%3E👗%3C/text%3E%3C/svg%3E'"
+            >
+          </template>
+          <template x-if="!currentModalImage">
+            <div class="modal-image" style="display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#FFF5F9,#FEF0F5);font-size:4rem;">👗</div>
+          </template>
           <template x-if="hasMultipleImages">
             <div>
               <button class="modal-image-nav prev" @click="prevImage()">◀</button>
