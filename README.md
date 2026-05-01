@@ -61,12 +61,45 @@
 
 ### 在 GitHub 网页上手动添加
 
-适合需要更精细控制的场景：
+适合需要更精细控制的场景，或者提交页面提示「需手动上传图片」时使用：
 
-1. 进入仓库的 `images/` 目录，上传图片
-2. 打开 `data/outfits.json`，点 **✏️ 编辑**
-3. 在 `outfits` 数组的 `]` 前粘贴一条新记录，修改内容
-4. 点 **Commit changes**
+**第一步：上传图片**
+
+1. 打开你的 GitHub 仓库页面
+2. 点击 `images` 文件夹进入
+3. 点击 **Add file** → **Upload files**
+4. 把图片文件拖入页面（建议 WebP 格式，文件名如 `outfit-007-front.webp`）
+5. 点 **Commit changes**
+
+**第二步：添加搭配码数据**
+
+1. 返回仓库主页，打开 `data/outfits.json`
+2. 点击右上角的 **✏️ 铅笔图标**（编辑）
+3. 在 `outfits` 数组的最后一个 `}` 后面加一个逗号，然后粘贴以下模板：
+
+```json
+{
+  "id": "outfit-007",
+  "code": "你的搭配码",
+  "name": "搭配名称",
+  "nameEn": "英文名",
+  "description": "搭配描述",
+  "descriptionEn": "",
+  "category": "cute",
+  "tags": ["popular"],
+  "images": ["outfit-007-front.webp"],
+  "thumbnail": "outfit-007-front.webp",
+  "author": { "name": "你的昵称", "link": "" },
+  "createdAt": "2026-05-01",
+  "featured": false,
+  "likes": 0
+}
+```
+
+4. 把 `outfit-007-front.webp` 改成你刚才上传的图片文件名
+5. 点 **Commit changes**
+
+网站会在 30 秒内自动更新。
 
 > **分类可选值：** cute(可爱)、elegant(优雅)、cool(酷帅)、fantasy(奇幻)、casual(休闲)、formal(正装)、seasonal(季节)、themed(主题)
 >
@@ -92,6 +125,13 @@ GitHub Action 会自动创建删除 PR，维护者审核合并后网站自动更
 ### 图片不显示？
 
 检查 Cloudflare Pages 环境变量中的 `GITHUB_USER` 和 `GITHUB_REPO` 是否填写正确。
+
+### 提交搭配码时跳转 GitHub 404？
+
+说明网站的 GitHub 仓库信息没有配置好。有两种解决方式：
+
+- **方式一：** 确认 Cloudflare Pages 环境变量 `GITHUB_USER` 和 `GITHUB_REPO` 填写正确，重新部署
+- **方式二：** 跳转前会弹出输入框，直接输入你的 GitHub 用户名和仓库名即可
 
 ### 部署后页面空白？
 
