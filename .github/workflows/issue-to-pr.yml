@@ -2,22 +2,23 @@ name: 搭配码 Issue 自动转 PR
 
 on:
   issues:
-    types: [opened]
+    types: [opened, edited]
+
+permissions:
+  issues: write
+  contents: write
+  pull-requests: write
 
 jobs:
   process-outfit:
     runs-on: ubuntu-latest
     if: contains(github.event.issue.title, '[搭配码]')
-    permissions:
-      issues: write
-      contents: write
-      pull-requests: write
     steps:
       - name: 检出代码
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: 解析 Issue 中的 JSON
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         id: parse
         with:
           script: |
@@ -38,27 +39,59 @@ jobs:
             core.setOutput('has_images', data.images && data.images.length > 0 ? 'true' : 'false');
 
       - name: 更新 outfits.json
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
+        id: update-db
         with:
           script: |
             const fs = require('fs');
             const data = JSON.parse(process.env.OUTFIT_JSON);
             const db = JSON.parse(fs.readFileSync('data/outfits.json', 'utf8'));
 
-            if (db.outfits.some(o => o.id === data.id)) {
-              core.setFailed('搭配码 ID 已存在: ' + data.id);
-              return;
+            const existIdx = db.outfits.findIndex(o => o.id === data.id);
+            if (existIdx !== -1) {
+              // ID 已存在，更新（用于 Issue 编辑场景）
+              db.outfits[existIdx] = data;
+              core.info('已更新: ' + data.id);
+              core.setOutput('action', 'updated');
+            } else {
+              db.outfits.push(data);
+              core.info('已添加: ' + data.id);
+              core.setOutput('action', 'added');
             }
 
-            db.outfits.push(data);
             db.lastUpdated = new Date().toISOString();
             fs.writeFileSync('data/outfits.json', JSON.stringify(db, null, 2) + '\n');
-            core.info('已添加: ' + data.id);
         env:
           OUTFIT_JSON: ${{ steps.parse.outputs.json }}
 
+      - name: 查找已关联的 PR
+        uses: actions/github-script@v8
+        id: find-pr
+        with:
+          script: |
+            const branch = 'outfit/${{ steps.parse.outputs.id }}';
+            try {
+              const prs = await github.rest.pulls.list({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                state: 'open',
+                head: context.repo.owner + ':' + branch
+              });
+              if (prs.data.length > 0) {
+                core.setOutput('existing_pr', prs.data[0].number);
+                core.setOutput('existing_branch', branch);
+                core.info('找到已有 PR: #' + prs.data[0].number);
+              } else {
+                core.setOutput('existing_pr', '');
+              }
+            } catch (e) {
+              core.setOutput('existing_pr', '');
+            }
+
       - name: 创建 PR
-        uses: peter-evans/create-pull-request@v6
+        if: steps.find-pr.outputs.existing_pr == ''
+        uses: peter-evans/create-pull-request@v7
+        id: create-pr
         with:
           commit-message: "添加搭配码: ${{ steps.parse.outputs.name }}"
           branch: "outfit/${{ steps.parse.outputs.id }}"
@@ -73,19 +106,40 @@ jobs:
 
           labels: outfit-code
 
-      - name: Issue 留言
-        uses: actions/github-script@v7
+      - name: 更新已有 PR
+        if: steps.find-pr.outputs.existing_pr != ''
+        uses: actions/github-script@v8
         with:
           script: |
+            const prNumber = parseInt('${{ steps.find-pr.outputs.existing_pr }}');
+            await github.rest.pulls.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: prNumber,
+              body: '自动从 Issue #${{ github.event.issue.number }} 同步更新\n\n**搭配码：** `${{ steps.parse.outputs.id }}`\n**名称：** ${{ steps.parse.outputs.name }}\n\n> 最后更新: ' + new Date().toISOString()
+            });
+            core.info('已更新 PR #' + prNumber);
+
+      - name: 关闭 Issue 并留言
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const prNum = '${{ steps.find-pr.outputs.existing_pr }}' || '${{ steps.create-pr.outputs.pull-request-number }}';
             await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.issue.number,
-              body: '已自动创建 Pull Request，请等待维护者审核合并。合并后网站将自动更新。'
+              body: '已自动创建 Pull Request #' + prNum + '，请等待维护者审核合并。\n\n合并后网站将自动更新，本 Issue 将自动关闭。'
             });
             await github.rest.issues.addLabels({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.issue.number,
               labels: ['已处理']
+            });
+            await github.rest.issues.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              state: 'closed'
             });
