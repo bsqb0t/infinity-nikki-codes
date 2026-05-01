@@ -194,6 +194,11 @@
           <p style="margin-top:8px;color:var(--text-secondary);">点击下方按钮会打开 GitHub Issue 页面，数据已自动填好，直接点「Submit new issue」即可</p>
           <a id="issueLink" class="issue-btn" href="#" target="_blank">在 GitHub 提交搭配码</a>
         </li>
+        <li id="stepUpload" style="display:none;">
+          <strong>手动上传图片</strong>
+          <p id="uploadHint" style="margin-top:8px;color:var(--text-secondary);"></p>
+          <p style="margin-top:4px;font-size:0.85rem;color:var(--text-muted);">进入仓库 → images 目录 → Add file → Upload files → 选择图片上传</p>
+        </li>
         <li>
           <strong>等待审核合并</strong>
           <p style="margin-top:8px;color:var(--text-secondary);">维护者审核通过后会合并到主分支，网站将自动更新</p>
@@ -345,6 +350,19 @@
       const name = document.getElementById('name').value.trim();
       if (!code || !name) { showToast('请至少填写搭配码和名称'); return; }
 
+      // 检查 config 是否已配置
+      let { user, repo } = SITE_CONFIG.github;
+      if (!user || user.includes('__') || !repo || repo.includes('__')) {
+        // 弹出输入框让用户填写
+        user = prompt('请输入你的 GitHub 用户名：', '');
+        if (!user) return;
+        repo = prompt('请输入仓库名：', 'infinity-nikki-codes');
+        if (!repo) return;
+        // 临时写入
+        SITE_CONFIG.github.user = user;
+        SITE_CONFIG.github.repo = repo;
+      }
+
       const nameEn = document.getElementById('nameEn').value.trim();
       const description = document.getElementById('description').value.trim();
       const category = document.getElementById('category').value;
@@ -387,15 +405,8 @@
       body += '---\n*由提交页面自动生成*';
 
       // 显示结果
-      if (imageDataBase64) {
-        // 有图片时只显示 Issue 链接（数据太长不适合复制）
-        document.getElementById('stepCopy').style.display = 'none';
-      } else {
-        // 无图片时显示 JSON 预览和复制按钮
-        document.getElementById('jsonPreview').textContent = json;
-        document.getElementById('stepCopy').style.display = '';
-      }
-
+      document.getElementById('jsonPreview').textContent = json;
+      document.getElementById('stepCopy').style.display = '';
       document.getElementById('resultBox').classList.add('show');
 
       const { user, repo } = SITE_CONFIG.github;
@@ -412,12 +423,18 @@
           '---\n*由提交页面自动生成*';
         document.getElementById('issueLink').href =
           'https://github.com/' + user + '/' + repo + '/issues/new?title=' + title + '&body=' + encodeURIComponent(bodyNoImage);
-        document.getElementById('stepCopy').style.display = '';
-        document.getElementById('jsonPreview').textContent = json +
-          '\n\n// 图片 base64 数据（请单独上传图片文件）';
+        document.getElementById('stepUpload').style.display = '';
+        document.getElementById('uploadHint').textContent =
+          '图片需要单独上传：进入仓库的 images/ 目录 → Add file → Upload files → 上传图片文件 ' + imageFileName;
         showToast('图片较大，需手动上传图片文件');
-      } else {
+      } else if (imageDataBase64) {
+        // 图片在 URL 限制内，自动带上
         document.getElementById('issueLink').href = fullUrl;
+        document.getElementById('stepUpload').style.display = 'none';
+      } else {
+        // 没有图片
+        document.getElementById('issueLink').href = fullUrl;
+        document.getElementById('stepUpload').style.display = 'none';
       }
 
       document.getElementById('resultBox').scrollIntoView({ behavior: 'smooth' });
